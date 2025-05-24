@@ -37,7 +37,7 @@ class SymbolWatcher(App):
         """Widgets in this app"""
         yield Header()
         with ScrollableContainer(id="Symbols"):
-            yield SymbolTicker()
+            ...
         yield Footer()
 
     def action_toggle_dark(self):

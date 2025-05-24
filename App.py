@@ -2,9 +2,12 @@ from textual import on
 from textual_plot import PlotWidget
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
-from textual.widgets import Header, Footer, Static, Button
+from textual.widgets import Placeholder, Header, Footer, Static, Button
 
-
+class PortfolioOverview(Static):
+    def compose(self) -> ComposeResult:
+        """Widgets for Portfolio overview"""
+        yield Placeholder()
 
 class TickerPriceDisplay(Static):
     ...
@@ -36,6 +39,7 @@ class SymbolWatcher(App):
     def compose(self) -> ComposeResult:
         """Widgets in this app"""
         yield Header()
+        yield PortfolioOverview()
         with ScrollableContainer(id="Symbols"):
             ...
         yield Footer()

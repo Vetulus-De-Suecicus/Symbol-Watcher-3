@@ -9,3 +9,8 @@ SymbolTicker {
     padding: 1;
     background: $boost;
 }
+
+PortfolioOverview {
+    height: 2;
+    width: 1fr;
+}

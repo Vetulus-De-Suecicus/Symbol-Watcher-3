@@ -1,0 +1,1 @@
+textual run --dev .\App.py

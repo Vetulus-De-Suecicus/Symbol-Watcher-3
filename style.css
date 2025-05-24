@@ -1,0 +1,11 @@
+SymbolTicker #plot {
+    min-width: 10;
+    max-width: 1fr;
+    height: 1fr;
+}
+
+SymbolTicker {
+    margin: 1;
+    padding: 1;
+    background: $boost;
+}

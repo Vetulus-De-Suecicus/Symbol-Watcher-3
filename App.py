@@ -1,13 +1,17 @@
 from textual import on
 from textual_plot import PlotWidget
 from textual.app import App, ComposeResult
-from textual.containers import ScrollableContainer
-from textual.widgets import Placeholder, Header, Footer, Static, Button
+from textual.containers import ScrollableContainer, HorizontalGroup
+from textual.widgets import Label, Header, Footer, Static, Button
+
+symbols = ["SAAB", "MSFT", "AAPL", "AMZN", "IPCO"]
 
 class PortfolioOverview(Static):
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
-        yield Placeholder()
+        with HorizontalGroup():
+            for id, symbol in enumerate(symbols):
+                yield Label(f"{symbol}{id}", id=f"{symbol}")
 
 class TickerPriceDisplay(Static):
     ...

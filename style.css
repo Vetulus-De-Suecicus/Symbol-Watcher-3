@@ -1,10 +1,11 @@
 SymbolTicker #plot {
+    width: 1fr;
     min-width: 10;
-    max-width: 1fr;
     height: 1fr;
 }
 
 SymbolTicker {
+    height: 25;
     margin: 1;
     padding: 1;
     background: grey;

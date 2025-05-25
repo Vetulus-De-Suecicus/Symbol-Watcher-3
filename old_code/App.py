@@ -7,6 +7,7 @@ from textual.containers import ScrollableContainer, HorizontalGroup
 from textual.widgets import Label, Header, Footer, Static, Button
 
 ### TEST DATA ###
+SYMBOLS = ["SAAB", "MSFT", "AAPL", "AMZN", "IPCO"]
 testdatax=[0, 1, 2, 3, 4]
 testdatay=[0, 1, 4, 9, 16]
 HOLDINGS = {
@@ -22,10 +23,6 @@ HOLDINGS = {
 PERIOD = "1d" # timespan of data
 INTERVAL = "1m" # granularity of data
 UPDATE_INTERVAL = 500 ### How often to fetch prices
-
-
-def Clean_symbol(symbol):
-    return re.sub(r'[^a-zA-Z0-9]', '', str(symbol))
 
 class StockManager:
 
@@ -73,32 +70,29 @@ class Symboldata():
 class PortfolioOverview(Static):
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
-        stock_manager = StockManager()
-        symbols = create_symbols() 
-        for symbol in symbols:
-            stock_manager.add_stock(symbol)
         with HorizontalGroup(id="symbolsgroup"):
-            for id, symbol in enumerate(HOLDINGS.keys()):
-                yield Label(f"{symbol}({stock_manager[symbol].close.iloc[-1]:.2f}):::", id=f"{Clean_symbol(symbol)}")
-    
-    def on_mount(self) -> None:
-        ...
+            for id, symbol in enumerate(SYMBOLS):
+                yield Label(f"{symbol}---", id=f"{symbol}")
 
 class TickerPriceDisplay(Static):
     pass
 
 class SymbolTicker(Static):
-    def compose(self, symbol) -> ComposeResult:
+    def compose(self) -> ComposeResult:
         """Widget for each symbol and graph"""
         #yield Button("Plot", id="plot")
         yield Button("Remove Symbol", id="remove")
-        yield TickerPriceDisplay("NaN: 0000:00", id=f"{Clean_symbol(symbol)}")
+        yield TickerPriceDisplay("NaN: 0000:00")
         yield PlotWidget(id="plot")
-
+###################################################################################
+### FIGURE OUT A WAY TO GET DATA INTO A SPECIFIC SYMBOLTICKER ###
     def on_mount(self) -> None:
         stock_manager = StockManager()
+        symbols = create_symbols() 
+        for symbol in symbols:
+            stock_manager.add_stock(symbol)
         plot = self.query_one(PlotWidget)
-        plot.plot(x=stock_manager[self.query_one(TickerPriceDisplay.id).close], y= stock_manager[self.query_one(TickerPriceDisplay.id).datetime])
+        plot.plot(x=testdatax, y= testdatay)
 
     @on(Button.Pressed, "#remove")
     def remove_symbol(self) -> None:
@@ -108,13 +102,13 @@ class SymbolTicker(Static):
 class SymbolWatcher(App):
     CSS_PATH = "style.css"
     BINDINGS = [
-        ("a", "add_symbols", "Add symbols"),
+        ("a", "add_symbol", "Add new symbol"),
         ("t", "toggle_dark", "Toggle dark mode")
     ]
 
     def compose(self) -> ComposeResult:
         """Widgets in this app"""
-        yield Header(show_clock=True)
+        yield Header()
         yield PortfolioOverview()
         with ScrollableContainer(id="Symbols"):
             pass
@@ -125,13 +119,12 @@ class SymbolWatcher(App):
             "textual-dark" if self.theme == "textual-light" else "textual-light"
         )
     
-    def action_add_symbols(self):
+    def action_add_symbol(self):
         stock_manager = StockManager()
-        for symbol in stock_manager.stocks:
-            symbolticker = SymbolTicker(stock_manager[symbol].symbol)
-            container = self.query_one("#Symbols")
-            container.mount(symbolticker)
-            symbolticker.scroll_visible()
+        symbolticker = SymbolTicker()
+        container = self.query_one("#Symbols")
+        container.mount(symbolticker)
+        symbolticker.scroll_visible()
 
 if __name__ == "__main__":
     SymbolWatcher().run()

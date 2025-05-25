@@ -1,14 +1,12 @@
 import regex as re
 import yfinance as yf
 from textual import on
-from textual_plot import PlotWidget
+from textual_plot import PlotWidget, HiResMode
 from textual.app import App, ComposeResult
-from textual.containers import ScrollableContainer, HorizontalGroup
+from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup
 from textual.widgets import Label, Header, Footer, Static, Button
 
 ### TEST DATA ###
-testdatax=[0, 1, 2, 3, 4]
-testdatay=[0, 1, 4, 9, 16]
 HOLDINGS = {
     "SAAB-B.ST": [1, 500],
     "SSAB-B.ST": [1, 500],
@@ -22,7 +20,6 @@ HOLDINGS = {
 PERIOD = "1d" # timespan of data
 INTERVAL = "1m" # granularity of data
 UPDATE_INTERVAL = 500 ### How often to fetch prices
-
 
 def Clean_symbol(symbol):
     return re.sub(r'[^a-zA-Z0-9]', '', str(symbol))
@@ -76,16 +73,34 @@ class PortfolioOverview(Static):
         """Widgets for Portfolio overview"""
         with HorizontalGroup(id="symbolsgroup"):
             for id, symbol in enumerate(HOLDINGS.keys()):
-                yield Label(f"{symbol}({self.stock_manager[symbol].close.iloc[-1]:.2f}):::", id=f"{Clean_symbol(symbol)}")
+                yield Label(f":::{symbol}```")
+                with VerticalGroup():
+                    yield Label(f"{self.stock_manager[symbol].close.iloc[-1]:.2f}", id=f"{Clean_symbol(symbol)}", classes="symbol")
+                    
     
-    def on_mount(self) -> None:
-        ...
+    async def on_mount(self) -> None:
+        self.set_interval(UPDATE_INTERVAL, self.refresh_price)
+
+    async def refresh_price(self) -> None:
+        for symbol in HOLDINGS.keys():
+            label = self.query_one(f"#{Clean_symbol(symbol)}", expect_type=Label)
+            price = self.stock_manager[symbol].close.iloc[-1]
+            label.update(f"({price:.2f})")
 
 class TickerPriceDisplay(Static):
-    pass
+    def __init__(self, symbol, stock_manager, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stock_manager = stock_manager
+        self.symbol = symbol  # Set symbol directly from argument
+
+    async def on_mount(self) -> None:
+        self.set_interval(UPDATE_INTERVAL, self.refresh_price)
+
+    async def refresh_price(self) -> None:
+            price = self.stock_manager[self.symbol].close.iloc[-1]
+            self.update(f"{price:.2f}")
 
 class SymbolTicker(Static):
-    
     def __init__(self, symbol, stock_manager, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.symbol = symbol
@@ -93,16 +108,18 @@ class SymbolTicker(Static):
 
     def compose(self) -> ComposeResult:
         """Widget for each symbol and graph"""
-        yield Button(f"Remove Symbol {self.symbol}", id="remove")
-        yield TickerPriceDisplay("NaN: 0000:00", id=f"{Clean_symbol(self.symbol)}")
+        with HorizontalGroup():
+            yield Button(f"Remove Symbol {self.symbol}", id="remove")
+            with VerticalGroup():
+                yield TickerPriceDisplay(self.symbol, self.stock_manager, id=f"{Clean_symbol(self.symbol)}")
         yield PlotWidget(id="plot")
 
     def on_mount(self) -> None:
         plot = self.query_one(PlotWidget)
         symbol_data = self.stock_manager[self.symbol]
-        plot.plot(x=symbol_data.datetime, y=symbol_data.close)
+        plot.plot(x=symbol_data.datetime, y=symbol_data.close, hires_mode=HiResMode.BRAILLE)
         sticker = self.query_one(f"#{Clean_symbol(self.symbol)}")
-        sticker.update(f"{self.stock_manager[self.symbol].close.iloc[-1]}")
+        sticker.update(f"{self.stock_manager[self.symbol].close.iloc[-1]:.2f}")
 
     @on(Button.Pressed, "#remove")
     def remove_symbol(self) -> None:

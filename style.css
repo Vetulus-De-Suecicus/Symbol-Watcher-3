@@ -5,10 +5,11 @@ SymbolTicker #plot {
 }
 
 SymbolTicker {
-    height: 25;
+    height: 35;
     margin: 1;
     padding: 1;
     background: grey;
+    border:none;
 }
 
 PortfolioOverview {
@@ -16,5 +17,10 @@ PortfolioOverview {
     width: 1fr;
 }
 PortfolioOverview #symbolsgroup {
-    margin: 1;
+    height:1;
+}
+
+.symbol {
+    width: 1fr;
+    /* background: red; */
 }

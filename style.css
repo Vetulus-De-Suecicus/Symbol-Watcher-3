@@ -7,16 +7,14 @@ SymbolTicker #plot {
 SymbolTicker {
     margin: 1;
     padding: 1;
-    background: $boost;
+    background: grey;
 }
 
 PortfolioOverview {
     height: 2;
     width: 1fr;
 }
-PortfolioOverview #symbol {
-    min-width: 1fr;
-    margin: 5;
-    padding: 5;
-    
+PortfolioOverview #symbolsgroup {
+    margin: 1;
+    background: red;
 }

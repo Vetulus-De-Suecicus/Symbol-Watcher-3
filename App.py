@@ -9,12 +9,12 @@ symbols = ["SAAB", "MSFT", "AAPL", "AMZN", "IPCO"]
 class PortfolioOverview(Static):
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
-        with HorizontalGroup():
+        with HorizontalGroup(id="symbolsgroup"):
             for id, symbol in enumerate(symbols):
-                yield Label(f"{symbol}{id}", id=f"{symbol}")
+                yield Label(f"{symbol}---", id=f"{symbol}")
 
 class TickerPriceDisplay(Static):
-    ...
+    pass
 
 class SymbolTicker(Static):
     def compose(self) -> ComposeResult:
@@ -45,7 +45,7 @@ class SymbolWatcher(App):
         yield Header()
         yield PortfolioOverview()
         with ScrollableContainer(id="Symbols"):
-            ...
+            pass
         yield Footer()
 
     def action_toggle_dark(self):

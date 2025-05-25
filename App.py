@@ -38,14 +38,11 @@ class StockManager:
     def __getitem__(self, key):
         return self.stocks[key]
 
-    def add_stock(self, stock):
-        self.stocks[stock.symbol] = stock
-
 def create_symbols():
     stocks = []  # Create new list
     for symbol in HOLDINGS.keys():
-        quantity = HOLDINGS[symbol][0]
-        value = HOLDINGS[symbol][1]
+        quantity = HOLDINGS[symbol][0] # get quantity
+        value = HOLDINGS[symbol][1] # get value
         stock = Symboldata(symbol, quantity, value)  # Assign instance to variable
         stocks.append(stock)   # Append that instance to list
     return stocks  # Return all newly created stocks
@@ -68,18 +65,18 @@ class Symboldata():
         self.currency = stock.info["currency"]
         
     def __repr__(self):
-        return f'Stock({self.symbol!r}), Quant({self.quantity}), Price({self.value})'
+        return f'Stock({self.symbol!r}), Quant({self.quantity!r}), Price({self.value!r})'
 
 class PortfolioOverview(Static):
+    def __init__(self, stock_manager, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stock_manager = stock_manager
+
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
-        stock_manager = StockManager()
-        symbols = create_symbols() 
-        for symbol in symbols:
-            stock_manager.add_stock(symbol)
         with HorizontalGroup(id="symbolsgroup"):
             for id, symbol in enumerate(HOLDINGS.keys()):
-                yield Label(f"{symbol}({stock_manager[symbol].close.iloc[-1]:.2f}):::", id=f"{Clean_symbol(symbol)}")
+                yield Label(f"{symbol}({self.stock_manager[symbol].close.iloc[-1]:.2f}):::", id=f"{Clean_symbol(symbol)}")
     
     def on_mount(self) -> None:
         ...
@@ -88,17 +85,24 @@ class TickerPriceDisplay(Static):
     pass
 
 class SymbolTicker(Static):
-    def compose(self, symbol) -> ComposeResult:
+    
+    def __init__(self, symbol, stock_manager, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.symbol = symbol
+        self.stock_manager = stock_manager
+
+    def compose(self) -> ComposeResult:
         """Widget for each symbol and graph"""
-        #yield Button("Plot", id="plot")
-        yield Button("Remove Symbol", id="remove")
-        yield TickerPriceDisplay("NaN: 0000:00", id=f"{Clean_symbol(symbol)}")
+        yield Button(f"Remove Symbol {self.symbol}", id="remove")
+        yield TickerPriceDisplay("NaN: 0000:00", id=f"{Clean_symbol(self.symbol)}")
         yield PlotWidget(id="plot")
 
     def on_mount(self) -> None:
-        stock_manager = StockManager()
         plot = self.query_one(PlotWidget)
-        plot.plot(x=stock_manager[self.query_one(TickerPriceDisplay.id).close], y= stock_manager[self.query_one(TickerPriceDisplay.id).datetime])
+        symbol_data = self.stock_manager[self.symbol]
+        plot.plot(x=symbol_data.datetime, y=symbol_data.close)
+        sticker = self.query_one(f"#{Clean_symbol(self.symbol)}")
+        sticker.update(f"{self.stock_manager[self.symbol].close.iloc[-1]}")
 
     @on(Button.Pressed, "#remove")
     def remove_symbol(self) -> None:
@@ -112,23 +116,29 @@ class SymbolWatcher(App):
         ("t", "toggle_dark", "Toggle dark mode")
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stock_manager = StockManager()
+        symbols = create_symbols() 
+        for symbol in symbols:
+            self.stock_manager.add_stock(symbol)
     def compose(self) -> ComposeResult:
         """Widgets in this app"""
         yield Header(show_clock=True)
-        yield PortfolioOverview()
+        yield PortfolioOverview(self.stock_manager)
         with ScrollableContainer(id="Symbols"):
             pass
+        yield Footer()
         yield Footer()
 
     def action_toggle_dark(self):
         self.theme = (
             "textual-dark" if self.theme == "textual-light" else "textual-light"
         )
-    
     def action_add_symbols(self):
-        stock_manager = StockManager()
-        for symbol in stock_manager.stocks:
-            symbolticker = SymbolTicker(stock_manager[symbol].symbol)
+        print("Creating Symbols with plots n stuff")
+        for symbol in self.stock_manager.stocks:
+            symbolticker = SymbolTicker(self.stock_manager[symbol].symbol, self.stock_manager)
             container = self.query_one("#Symbols")
             container.mount(symbolticker)
             symbolticker.scroll_visible()

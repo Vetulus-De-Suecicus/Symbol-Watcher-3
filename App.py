@@ -89,14 +89,19 @@ class PortfolioOverview(Static):
                 with VerticalGroup(classes="symbol"):
                     yield Label(f"{symbol}")
                     with HorizontalGroup(classes="symbolclosed"):
+                        if self.stock_manager[symbol].currency == LOCAL_CURRENCY: # if the symbol currency == local currency then just get the prices and display them
+                            yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}:{self.stock_manager[symbol].currency}")
+                        else: # if symbol currency differs from local currency, convert to local currency
+                            convertedlaststock = self.convert_to_local_currency(symbol)
+                            yield Label(f"CloseCV: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
+                    with VerticalGroup(classes="symbolactual"):
                         if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
-                            yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}{self.stock_manager[symbol].currency}")
+                            actualvalue = self.stock_manager[symbol].close.iloc[-1] * HOLDINGS[symbol][0]
+                            total += actualvalue
                         else:
                             convertedlaststock = self.convert_to_local_currency(symbol)
-                            yield Label(f"CloseCV: {convertedlaststock:.2f}{self.stock_manager[symbol].currency}")
-                    with VerticalGroup(classes="symbolactual"):
-                        actualvalue = self.stock_manager[symbol].close.iloc[-1] * HOLDINGS[symbol][0]
-                        total += actualvalue
+                            actualvalue = convertedlaststock * HOLDINGS[symbol][0]
+                            total += actualvalue
                         yield Label(f"Actual: {actualvalue:.2f}")
                     with VerticalGroup(classes="symbolchange"):
                         q = HOLDINGS[symbol][0]
@@ -105,7 +110,7 @@ class PortfolioOverview(Static):
                         change = actualvalue - purchased_value
                         total_change += change
                         yield Label(f"{change:.2f}")
-        yield Label(f"TOTAL WORTH: {total:.2f} ::: TOTAL CHANGE: {total_change:.2f}", classes="allsymbols")
+        yield Label(f"TOTAL WORTH: {total:.2f}:{LOCAL_CURRENCY} ::: TOTAL CHANGE: {total_change:.2f}:{LOCAL_CURRENCY}", classes="allsymbols")
     
         
     async def on_mount(self) -> None:

@@ -16,6 +16,7 @@ HOLDINGS = {
     "AAPL": [0, 0],
     "AMZN": [0,1]
 }
+LOCAL_CURRENCY = "SEK"
 
 ### SETTINGS ###
 PERIOD = "1d" # timespan of data
@@ -70,6 +71,15 @@ class PortfolioOverview(Static):
         super().__init__(*args, **kwargs)
         self.stock_manager = stock_manager
 
+    def convert_to_local_currency(self, symbol):
+        stocklastclosed = self.stock_manager[symbol].close.iloc[-1]
+        currencystring = LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X"
+        currencyticker = yf.Ticker(currencystring)
+        self.history = currencyticker.history()
+        currencylastclosed = self.history['Close'].iloc[-1]
+        value = stocklastclosed / currencylastclosed
+        return value
+        
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
         total = 0
@@ -93,6 +103,7 @@ class PortfolioOverview(Static):
                         yield Label(f"{change:.2f}")
         yield Label(f"TOTAL WORTH: {total:.2f} ::: TOTAL CHANGE: {total_change:.2f}", classes="allsymbols")
     
+        
     async def on_mount(self) -> None:
         self.set_interval(UPDATE_INTERVAL, self.refresh_price)
 
@@ -101,6 +112,7 @@ class PortfolioOverview(Static):
             label = self.query_one(f"#{Clean_symbol(symbol)}", expect_type=Label)
             price = self.stock_manager[symbol].close.iloc[-1]
             label.update(f"({price:.2f})")
+
 
 class TickerPriceDisplay(Static):
     def __init__(self, symbol, stock_manager, *args, **kwargs):

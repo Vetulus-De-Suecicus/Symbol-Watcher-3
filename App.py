@@ -6,7 +6,8 @@ from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup
 from textual.widgets import Label, Header, Footer, Static, Button
 
-### TEST DATA ###
+### TEST DATA
+# "TICKER": [QUANTITY, VALUE]
 HOLDINGS = {
     "SAAB-B.ST": [1, 500],
     "SSAB-B.ST": [1, 500],
@@ -73,24 +74,24 @@ class PortfolioOverview(Static):
         """Widgets for Portfolio overview"""
         total = 0
         total_change = 0
-        with HorizontalGroup():
+        with HorizontalGroup(classes="allsymbols"):
             for symbol in HOLDINGS.keys():
-                with VerticalGroup():
+                with VerticalGroup(classes="symbol"):
                     yield Label(f"{symbol}")
-                    with HorizontalGroup():
+                    with HorizontalGroup(classes="symbolclosed"):
                         yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}")
-                    with VerticalGroup():
+                    with VerticalGroup(classes="symbolactual"):
                         actualvalue = self.stock_manager[symbol].close.iloc[-1] * HOLDINGS[symbol][0]
                         total += actualvalue
                         yield Label(f"Actual: {actualvalue:.2f}")
-                    with VerticalGroup():
+                    with VerticalGroup(classes="symbolchange"):
                         q = HOLDINGS[symbol][0]
                         v = HOLDINGS[symbol][1]
                         purchased_value = q * v
                         change = actualvalue - purchased_value
                         total_change += change
                         yield Label(f"{change:.2f}")
-        yield Label(f"TOTAL WORTH: {total:.2f} ::: TOTAL CHANGE: {total_change:.2f}")
+        yield Label(f"TOTAL WORTH: {total:.2f} ::: TOTAL CHANGE: {total_change:.2f}", classes="allsymbols")
     
     async def on_mount(self) -> None:
         self.set_interval(UPDATE_INTERVAL, self.refresh_price)

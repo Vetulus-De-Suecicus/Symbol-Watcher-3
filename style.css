@@ -5,11 +5,10 @@ SymbolTicker #plot {
 }
 
 SymbolTicker {
-    height: 35;
+    height: 20;
     margin: 1;
     padding: 1;
     background: $boost;
-    border:none;
 }
 
 PortfolioOverview {

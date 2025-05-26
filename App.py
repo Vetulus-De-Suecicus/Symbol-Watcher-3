@@ -72,13 +72,13 @@ class PortfolioOverview(Static):
         self.stock_manager = stock_manager
 
     def convert_to_local_currency(self, symbol):
-        stocklastclosed = self.stock_manager[symbol].close.iloc[-1]
-        currencystring = LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X"
-        currencyticker = yf.Ticker(currencystring)
+        stocklastclosed = self.stock_manager[symbol].close.iloc[-1] # gets stock last closed prices from actual symbol
+        currencystring = LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X" # creates the string for the fetcher
+        currencyticker = yf.Ticker(currencystring) # fetches currency data with currencystring
         self.history = currencyticker.history()
-        currencylastclosed = self.history['Close'].iloc[-1]
-        value = stocklastclosed / currencylastclosed
-        return value
+        currencylastclosed = self.history['Close'].iloc[-1] # gets last closing price of currency
+        value = stocklastclosed / currencylastclosed # converts last closing price to local
+        return value # returns converted last closing price of symbol
         
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
@@ -89,7 +89,11 @@ class PortfolioOverview(Static):
                 with VerticalGroup(classes="symbol"):
                     yield Label(f"{symbol}")
                     with HorizontalGroup(classes="symbolclosed"):
-                        yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}")
+                        if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
+                            yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}{self.stock_manager[symbol].currency}")
+                        else:
+                            convertedlaststock = self.convert_to_local_currency(symbol)
+                            yield Label(f"CloseCV: {convertedlaststock:.2f}{self.stock_manager[symbol].currency}")
                     with VerticalGroup(classes="symbolactual"):
                         actualvalue = self.stock_manager[symbol].close.iloc[-1] * HOLDINGS[symbol][0]
                         total += actualvalue

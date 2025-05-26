@@ -19,7 +19,7 @@ HOLDINGS = {
 ### SETTINGS ###
 PERIOD = "1d" # timespan of data
 INTERVAL = "1m" # granularity of data
-UPDATE_INTERVAL = 500 ### How often to fetch prices
+UPDATE_INTERVAL = 600 ### How often to fetch prices
 
 def Clean_symbol(symbol):
     return re.sub(r'[^a-zA-Z0-9]', '', str(symbol))
@@ -69,14 +69,37 @@ class PortfolioOverview(Static):
         super().__init__(*args, **kwargs)
         self.stock_manager = stock_manager
 
+    # def compose(self) -> ComposeResult:
+    #     """Widgets for Portfolio overview"""
+    #     with HorizontalGroup():
+    #         for symbol in HOLDINGS.keys():
+    #             with VerticalGroup():
+    #                 yield Label(f"{symbol}")
+    #                 with HorizontalGroup():
+    #                     yield Label(f"({self.stock_manager[symbol].close.iloc[-1]:.2f})", id=f"{Clean_symbol(symbol)}", classes="symbol")
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
-        with HorizontalGroup(id="symbolsgroup"):
-            for id, symbol in enumerate(HOLDINGS.keys()):
-                yield Label(f":::{symbol}```")
+        total = 0
+        total_change = 0
+        with HorizontalGroup():
+            for symbol in HOLDINGS.keys():
                 with VerticalGroup():
-                    yield Label(f"{self.stock_manager[symbol].close.iloc[-1]:.2f}", id=f"{Clean_symbol(symbol)}", classes="symbol")
-                    
+                    yield Label(f"{symbol}")
+                    with HorizontalGroup():
+                        yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}")
+                    with VerticalGroup():
+                        actualvalue = self.stock_manager[symbol].close.iloc[-1] * HOLDINGS[symbol][0]
+                        total += actualvalue
+                        yield Label(f"Actual: {actualvalue:.2f}")
+                    with VerticalGroup():
+                        q = HOLDINGS[symbol][0]
+                        v = HOLDINGS[symbol][1]
+                        purchased_value = q * v
+                        change = actualvalue - purchased_value
+                        total_change += change
+                        yield Label(f"{change:.2f}")
+        total_change
+        yield Label(f"TOTAL WORTH: {total:.2f} ::: TOTAL CHANGE: {total_change:.2f}")
     
     async def on_mount(self) -> None:
         self.set_interval(UPDATE_INTERVAL, self.refresh_price)

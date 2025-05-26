@@ -69,14 +69,6 @@ class PortfolioOverview(Static):
         super().__init__(*args, **kwargs)
         self.stock_manager = stock_manager
 
-    # def compose(self) -> ComposeResult:
-    #     """Widgets for Portfolio overview"""
-    #     with HorizontalGroup():
-    #         for symbol in HOLDINGS.keys():
-    #             with VerticalGroup():
-    #                 yield Label(f"{symbol}")
-    #                 with HorizontalGroup():
-    #                     yield Label(f"({self.stock_manager[symbol].close.iloc[-1]:.2f})", id=f"{Clean_symbol(symbol)}", classes="symbol")
     def compose(self) -> ComposeResult:
         """Widgets for Portfolio overview"""
         total = 0
@@ -98,7 +90,6 @@ class PortfolioOverview(Static):
                         change = actualvalue - purchased_value
                         total_change += change
                         yield Label(f"{change:.2f}")
-        total_change
         yield Label(f"TOTAL WORTH: {total:.2f} ::: TOTAL CHANGE: {total_change:.2f}")
     
     async def on_mount(self) -> None:

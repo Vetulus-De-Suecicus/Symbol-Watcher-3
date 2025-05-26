@@ -20,7 +20,7 @@ HOLDINGS = {
 ### SETTINGS ###
 PERIOD = "1d" # timespan of data
 INTERVAL = "1m" # granularity of data
-UPDATE_INTERVAL = 600 ### How often to fetch prices
+UPDATE_INTERVAL = 600 ### How often to fetch prices, min 60=60 seconds
 
 def Clean_symbol(symbol):
     return re.sub(r'[^a-zA-Z0-9]', '', str(symbol))

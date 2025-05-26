@@ -8,7 +8,7 @@ from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGro
 from textual.widgets import Label, Header, Footer, Static, Button  # UI widgets
 
 ### TEST DATA
-# Dictionary of holdings: "TICKER": [QUANTITY, VALUE]
+# Dictionary of holdings: "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY]
 HOLDINGS = {
     "SAAB-B.ST": [1, 500],
     "SSAB-B.ST": [1, 500],

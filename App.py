@@ -138,29 +138,29 @@ class PortfolioOverview(Static):
                 # Closing updated prices
                 closingprice = self.stock_manager[symbol].close.iloc[-1]
                 currencyclosing = self.stock_manager[symbol].currency
-                closing.update(f"!Close: {closingprice:.2f}:{currencyclosing}")
+                closing.update(f"Close: {closingprice:.2f}:{currencyclosing}")
 
                 # Actual updated prices
                 actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
-                actual.update(f"!Actual: {actualvalue:.2f}")
+                actual.update(f"Actual: {actualvalue:.2f}")
 
                 # Changed prices updated
                 purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
                 changedvalue = actualvalue - purchased_value
-                change.update(f"!Changed: {changedvalue:.2f}")
+                change.update(f"Changed: {changedvalue:.2f}")
             elif self.stock_manager[symbol].currency != LOCAL_CURRENCY:
                 # Closing updated prices for converted currency
                 convertedlaststock = self.convert_to_local_currency(symbol)
-                closing.update(f"!Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
+                closing.update(f"Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
 
                 # Actual updated prices for converted currency
                 actualvalue = self.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
-                actual.update(f"!Actual: {actualvalue:.2f}")
+                actual.update(f"Actual: {actualvalue:.2f}")
 
                 # Changed prices updated for converted currency
                 purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
                 changedvalue = actualvalue - purchased_value
-                change.update(f"!Changed: {changedvalue:.2f}")
+                change.update(f"Changed: {changedvalue:.2f}")
 
 class TickerPriceDisplay(Digits):
     """Widget to display the current price of a ticker."""

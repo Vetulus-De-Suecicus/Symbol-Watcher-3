@@ -22,7 +22,7 @@ LOCAL_CURRENCY = "SEK"  # Local currency for conversion
 ### SETTINGS ###
 PERIOD = "1d"  # Timespan of data to fetch
 INTERVAL = "1m"  # Data granularity
-UPDATE_INTERVAL = 600  # How often to fetch prices (in seconds), min 60
+UPDATE_INTERVAL = 5  # How often to fetch prices (in seconds), min 60
 
 def Clean_symbol(symbol):
     """Remove all non-alphanumeric characters from symbol string."""
@@ -101,10 +101,10 @@ class PortfolioOverview(Static):
                     with HorizontalGroup(classes="symbolclosed"):
                         # Show close price, convert if needed
                         if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
-                            yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}:{self.stock_manager[symbol].currency}")
+                            yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}:{self.stock_manager[symbol].currency}", id=f"{Clean_symbol(symbol)}")
                         else:
                             convertedlaststock = self.convert_to_local_currency(symbol)
-                            yield Label(f"CloseCV: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
+                            yield Label(f"CloseCV: {convertedlaststock:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
                     with VerticalGroup(classes="symbolactual"):
                         # Calculate actual value (converted if needed)
                         if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
@@ -112,19 +112,19 @@ class PortfolioOverview(Static):
                             total += actualvalue
                         else:
                             convertedlaststock = self.convert_to_local_currency(symbol)
-                            actualvalue = convertedlaststock * HOLDINGS[symbol][0]
+                            actualvalue = convertedlaststock * self.stock_manager[symbol].quantity
                             total += actualvalue
-                        yield Label(f"Actual: {actualvalue:.2f}")
+                        yield Label(f"Actual: {actualvalue:.2f}", id=f"{Clean_symbol(symbol)}actual")
                     with VerticalGroup(classes="symbolchange"):
                         # Calculate change from purchase value
-                        q = HOLDINGS[symbol][0]
-                        v = HOLDINGS[symbol][1]
+                        q = self.stock_manager[symbol].quantity
+                        v = self.stock_manager[symbol].value
                         purchased_value = q * v
                         change = actualvalue - purchased_value
                         total_change += change
-                        yield Label(f"{change:.2f}")
+                        yield Label(f"{change:.2f}", id=f"{Clean_symbol(symbol)}change")
         # Show totals
-        yield Label(f"TOTAL WORTH: {total:.2f}:{LOCAL_CURRENCY} ::: TOTAL CHANGE: {total_change:.2f}:{LOCAL_CURRENCY}", classes="allsymbols")
+        yield Label(f"TOTAL WORTH: {total:.2f}:{LOCAL_CURRENCY} ::: TOTAL CHANGE: {total_change:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}total", classes="allsymbols")
     
     async def on_mount(self) -> None:
         """Set up periodic price refresh on mount."""
@@ -133,9 +133,18 @@ class PortfolioOverview(Static):
     async def refresh_price(self) -> None:
         """Refresh prices for all symbols."""
         for symbol in HOLDINGS.keys():
-            label = self.query_one(f"#{Clean_symbol(symbol)}", expect_type=Label)
-            price = self.stock_manager[symbol].close.iloc[-1]
-            label.update(f"({price:.2f})")
+            closing = self.query_one(f"#{Clean_symbol(symbol)}", expect_type=Label)
+            actual = self.query_one(f"#{Clean_symbol(symbol)}actual", expect_type=Label)
+            change = self.query_one(f"#{Clean_symbol(symbol)}change", expect_type=Label)
+            
+            if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
+                closingprice = self.stock_manager[symbol].close.iloc[-1]
+                currencyclosing = self.stock_manager[symbol].currency
+                closing.update(f"!Close: {closingprice:.2f}:{currencyclosing}")
+            elif self.stock_manager[symbol].currency != LOCAL_CURRENCY:
+                convertedlaststock = self.convert_to_local_currency(symbol)
+                closing.update(f"!!Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
+            
 
 class TickerPriceDisplay(Static):
     """Widget to display the current price of a ticker."""

@@ -14,6 +14,7 @@ SymbolTicker {
 PortfolioOverview {
     height: auto;
     width: 1fr;
+    background: $boost;
 }
 
 
@@ -26,6 +27,6 @@ PortfolioOverview {
     background: $boost;
 }
 
-.allsymbols {
-    background: $boost;
+PortfolioOverview.-hidden {
+    display: none;
 }

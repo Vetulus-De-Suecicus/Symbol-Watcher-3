@@ -4,7 +4,7 @@ import yfinance as yf  # For fetching financial data
 from textual import on  # For event handling in textual
 from textual_plot import PlotWidget, HiResMode  # For plotting widgets
 from textual.app import App, ComposeResult  # Main app and composition
-from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup  # Layout containers
+from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup, Container  # Layout containers
 from textual.widgets import Label, Header, Footer, Static, Button, Digits  # UI widgets
 
 ### TEST DATA
@@ -73,7 +73,7 @@ class Symboldata():
         """String representation for debugging."""
         return f'Stock({self.symbol!r}), Quant({self.quantity!r}), Price({self.value!r})'
 
-class PortfolioOverview(Static):
+class PortfolioOverview(Container):
     """Widget to display an overview of the portfolio."""
 
     def __init__(self, stock_manager, *args, **kwargs):
@@ -212,7 +212,8 @@ class SymbolWatcher(App):
 
     CSS_PATH = "style.css"  # Path to CSS file
     BINDINGS = [
-        ("a", "add_symbols", "Add symbols")
+        ("a", "add_symbols", "Add symbols"),
+        ("s", "toggle_overview", "Toggle Overview")
     ]
 
     def __init__(self, *args, **kwargs):
@@ -225,7 +226,7 @@ class SymbolWatcher(App):
     def compose(self) -> ComposeResult:
         """Compose the main app widgets."""
         yield Header(show_clock=True)  # Header with clock
-        yield PortfolioOverview(self.stock_manager)  # Portfolio overview
+        yield PortfolioOverview(self.stock_manager, classes="-hidden")  # Portfolio overview
         with ScrollableContainer(id="Symbols"):
             pass  # Container for symbol tickers
         yield Footer()  # Footer
@@ -233,6 +234,9 @@ class SymbolWatcher(App):
     
     def on_mount(self):
         self.theme = "nord"
+
+    def action_toggle_overview(self) -> None:
+        self.query_one(PortfolioOverview).toggle_class("-hidden")
 
     def action_add_symbols(self):
         """Add symbol tickers to the UI."""

@@ -2,6 +2,7 @@
 import regex as re  # For regular expressions
 import yfinance as yf  # For fetching financial data
 from textual import on  # For event handling in textual
+from textual.screen import ModalScreen 
 from textual_plot import PlotWidget, HiResMode  # For plotting widgets
 from textual.app import App, ComposeResult  # Main app and composition
 from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup, Container  # Layout containers
@@ -51,6 +52,16 @@ def create_symbols():
         stock = Symboldata(symbol, quantity, value)  # Create Symboldata instance
         stocks.append(stock)  # Add to list
     return stocks
+
+class HelpScreen(ModalScreen):
+    BINDINGS = [("escape", "dismiss")]
+
+    def compose(self) -> ComposeResult:
+        with Container(id="help-screen-container"):
+            yield Label("Remember to set LOCAL_CURRENCY and HOLDINGS correctly")
+            yield Label(f"All values are presented in {LOCAL_CURRENCY} for the Overview")
+            yield Label(f"All values are NOT presented in {LOCAL_CURRENCY} for the Plots/Graphs")
+            yield Label("Press ESC to exit")
 
 class Symboldata():
     """Fetches and stores financial data for a symbol from Yahoo Finance."""
@@ -104,7 +115,7 @@ class PortfolioOverview(Container):
                             yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}:{self.stock_manager[symbol].currency}", id=f"{Clean_symbol(symbol)}")
                         else:
                             convertedlaststock = self.convert_to_local_currency(symbol)
-                            yield Label(f"CloseCV: {convertedlaststock:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
+                            yield Label(f"Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
                     with VerticalGroup(classes="symbolactual"):
                         # Calculate actual value (converted if needed)
                         if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
@@ -218,7 +229,8 @@ class SymbolWatcher(App):
     CSS_PATH = "style.css"  # Path to CSS file
     BINDINGS = [
         ("a", "add_symbols", "Add symbols"),
-        ("s", "toggle_overview", "Toggle Overview")
+        ("s", "toggle_overview", "Toggle Overview"),
+        ("h", "toggle_help", "Help")
     ]
 
     def __init__(self, *args, **kwargs):
@@ -251,6 +263,9 @@ class SymbolWatcher(App):
             container = self.query_one("#Symbols")
             container.mount(symbolticker)
             symbolticker.scroll_visible()
+
+    def action_toggle_help(self):
+        self.push_screen(HelpScreen())
 
 if __name__ == "__main__":
     SymbolWatcher().run()  # Run the app

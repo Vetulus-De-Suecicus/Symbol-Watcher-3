@@ -3,10 +3,10 @@ import regex as re  # For regular expressions
 import yfinance as yf  # For fetching financial data
 from textual import on  # For event handling in textual
 from textual.screen import ModalScreen 
-from textual_plot import PlotWidget, HiResMode  # For plotting widgets
 from textual.app import App, ComposeResult  # Main app and composition
-from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup, Container  # Layout containers
+from textual_plot import PlotWidget, HiResMode  # For plotting widgets
 from textual.widgets import Label, Header, Footer, Static, Button, Digits  # UI widgets
+from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup, Container  # Layout containers
 
 ### TEST DATA
 # Dictionary of holdings: "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY]

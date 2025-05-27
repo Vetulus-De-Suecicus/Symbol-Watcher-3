@@ -212,8 +212,7 @@ class SymbolWatcher(App):
 
     CSS_PATH = "style.css"  # Path to CSS file
     BINDINGS = [
-        ("a", "add_symbols", "Add symbols"),
-        ("t", "toggle_dark", "Toggle dark mode")
+        ("a", "add_symbols", "Add symbols")
     ]
 
     def __init__(self, *args, **kwargs):
@@ -231,12 +230,9 @@ class SymbolWatcher(App):
             pass  # Container for symbol tickers
         yield Footer()  # Footer
         yield Footer()  # (Possibly redundant) second footer
-
-    def action_toggle_dark(self):
-        """Toggle between dark and light themes."""
-        self.theme = (
-            "textual-dark" if self.theme == "textual-light" else "textual-light"
-        )
+    
+    def on_mount(self):
+        self.theme = "nord"
 
     def action_add_symbols(self):
         """Add symbol tickers to the UI."""

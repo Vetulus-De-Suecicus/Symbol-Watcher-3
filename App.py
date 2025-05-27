@@ -133,7 +133,9 @@ class PortfolioOverview(Container):
             closing = self.query_one(f"#{Clean_symbol(symbol)}", expect_type=Label)
             actual = self.query_one(f"#{Clean_symbol(symbol)}actual", expect_type=Label)
             change = self.query_one(f"#{Clean_symbol(symbol)}change", expect_type=Label)
-            
+            closing.loading = True
+            change.loading = True
+            actual.loading = True
             if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
                 # Closing updated prices
                 closingprice = self.stock_manager[symbol].close.iloc[-1]
@@ -162,6 +164,9 @@ class PortfolioOverview(Container):
                 changedvalue = actualvalue - purchased_value
                 change.update(f"Changed: {changedvalue:.2f}")
 
+            closing.loading = False
+            change.loading = False
+            actual.loading = False
 class TickerPriceDisplay(Digits):
     """Widget to display the current price of a ticker."""
 

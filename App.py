@@ -5,7 +5,7 @@ from textual import on  # For event handling in textual
 from textual_plot import PlotWidget, HiResMode  # For plotting widgets
 from textual.app import App, ComposeResult  # Main app and composition
 from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup  # Layout containers
-from textual.widgets import Label, Header, Footer, Static, Button  # UI widgets
+from textual.widgets import Label, Header, Footer, Static, Button, Digits  # UI widgets
 
 ### TEST DATA
 # Dictionary of holdings: "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY]
@@ -108,21 +108,18 @@ class PortfolioOverview(Static):
                     with VerticalGroup(classes="symbolactual"):
                         # Calculate actual value (converted if needed)
                         if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
-                            actualvalue = self.stock_manager[symbol].close.iloc[-1] * HOLDINGS[symbol][0]
+                            actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
                             total += actualvalue
                         else:
-                            convertedlaststock = self.convert_to_local_currency(symbol)
-                            actualvalue = convertedlaststock * self.stock_manager[symbol].quantity
+                            actualvalue = self.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
                             total += actualvalue
                         yield Label(f"Actual: {actualvalue:.2f}", id=f"{Clean_symbol(symbol)}actual")
                     with VerticalGroup(classes="symbolchange"):
                         # Calculate change from purchase value
-                        q = self.stock_manager[symbol].quantity
-                        v = self.stock_manager[symbol].value
-                        purchased_value = q * v
+                        purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
                         change = actualvalue - purchased_value
                         total_change += change
-                        yield Label(f"{change:.2f}", id=f"{Clean_symbol(symbol)}change")
+                        yield Label(f"Changed: {change:.2f}", id=f"{Clean_symbol(symbol)}change")
         # Show totals
         yield Label(f"TOTAL WORTH: {total:.2f}:{LOCAL_CURRENCY} ::: TOTAL CHANGE: {total_change:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}total", classes="allsymbols")
     
@@ -138,15 +135,34 @@ class PortfolioOverview(Static):
             change = self.query_one(f"#{Clean_symbol(symbol)}change", expect_type=Label)
             
             if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
+                # Closing updated prices
                 closingprice = self.stock_manager[symbol].close.iloc[-1]
                 currencyclosing = self.stock_manager[symbol].currency
                 closing.update(f"!Close: {closingprice:.2f}:{currencyclosing}")
-            elif self.stock_manager[symbol].currency != LOCAL_CURRENCY:
-                convertedlaststock = self.convert_to_local_currency(symbol)
-                closing.update(f"!!Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
-            
 
-class TickerPriceDisplay(Static):
+                # Actual updated prices
+                actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
+                actual.update(f"!Actual: {actualvalue:.2f}")
+
+                # Changed prices updated
+                purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
+                changedvalue = actualvalue - purchased_value
+                change.update(f"!Changed: {changedvalue:.2f}")
+            elif self.stock_manager[symbol].currency != LOCAL_CURRENCY:
+                # Closing updated prices for converted currency
+                convertedlaststock = self.convert_to_local_currency(symbol)
+                closing.update(f"!Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
+
+                # Actual updated prices for converted currency
+                actualvalue = self.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
+                actual.update(f"!Actual: {actualvalue:.2f}")
+
+                # Changed prices updated for converted currency
+                purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
+                changedvalue = actualvalue - purchased_value
+                change.update(f"!Changed: {changedvalue:.2f}")
+
+class TickerPriceDisplay(Digits):
     """Widget to display the current price of a ticker."""
 
     def __init__(self, symbol, stock_manager, *args, **kwargs):

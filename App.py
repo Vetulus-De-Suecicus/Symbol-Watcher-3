@@ -22,7 +22,7 @@ LOCAL_CURRENCY = "SEK"  # Local currency for conversion
 ### SETTINGS ###
 PERIOD = "1d"  # Timespan of data to fetch
 INTERVAL = "1m"  # Data granularity
-UPDATE_INTERVAL = 5  # How often to fetch prices (in seconds), min 60
+UPDATE_INTERVAL = 60  # How often to fetch prices (in seconds), min 60
 
 def Clean_symbol(symbol):
     """Remove all non-alphanumeric characters from symbol string."""

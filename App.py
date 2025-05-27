@@ -139,7 +139,7 @@ class PortfolioOverview(Static):
                 closingprice = self.stock_manager[symbol].close.iloc[-1]
                 currencyclosing = self.stock_manager[symbol].currency
                 closing.update(f"Close: {closingprice:.2f}:{currencyclosing}")
-
+                
                 # Actual updated prices
                 actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
                 actual.update(f"Actual: {actualvalue:.2f}")

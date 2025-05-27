@@ -191,8 +191,7 @@ class SymbolTicker(Static):
         """Compose widgets for the symbol ticker."""
         with HorizontalGroup():
             yield Button(f"Remove Symbol {self.symbol}", id="remove")  # Remove button
-            with VerticalGroup():
-                yield TickerPriceDisplay(self.symbol, self.stock_manager, id=f"{Clean_symbol(self.symbol)}")  # Price display
+            yield TickerPriceDisplay(self.symbol, self.stock_manager, id=f"{Clean_symbol(self.symbol)}")  # Price display
         yield PlotWidget(id="plot")  # Plot widget
 
     def on_mount(self) -> None:

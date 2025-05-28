@@ -225,7 +225,10 @@ class SymbolTicker(Static):
 
 class SymbolWatcher(App):
     """Main application class for the Symbol Watcher."""
-
+    
+    TITLE = "Symbol Watcher 3"
+    SUB_TITLE = "0.1"
+    
     CSS_PATH = "style.css"  # Path to CSS file
     BINDINGS = [
         ("a", "add_symbols", "Add symbols"),

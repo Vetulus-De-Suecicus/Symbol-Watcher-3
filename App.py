@@ -1,4 +1,5 @@
 # Import necessary libraries
+import json
 import regex as re  # For regular expressions
 import yfinance as yf  # For fetching financial data
 from textual import on  # For event handling in textual
@@ -10,14 +11,23 @@ from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGro
 
 ### TEST DATA
 # Dictionary of holdings: "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY]
-HOLDINGS = {
-    "SAAB-B.ST": [1, 500],
-    "SSAB-B.ST": [1, 500],
-    "^OMX": [0, 0],
-    "MSFT": [1, 500],
-    "AAPL": [0, 0],
-    "AMZN": [0,1]
-}
+
+def load_holdings(filename="holdings.json"):
+    """Load holdings from a JSON file."""
+    try:
+        with open(filename, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # If file doesn't exist, return empty dict or provide a default
+        return {}
+
+HOLDINGS = load_holdings()
+
+if not HOLDINGS:
+    print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
+else:
+    print(HOLDINGS)
+
 LOCAL_CURRENCY = "SEK"  # Local currency for conversion
 
 ### SETTINGS ###
@@ -247,8 +257,8 @@ class SymbolWatcher(App):
         """Compose the main app widgets."""
         yield Header(show_clock=True)  # Header with clock
         yield PortfolioOverview(self.stock_manager, classes="-hidden")  # Portfolio overview
-        with ScrollableContainer(id="Symbols"):
-            pass  # Container for symbol tickers
+        with ScrollableContainer(id="Symbols"): # Container for symbol tickers
+            pass  
         yield Footer()  # Footer
         yield Footer()  # (Possibly redundant) second footer
     

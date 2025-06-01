@@ -30,15 +30,13 @@ def load_holdings(filename="holdings.json"):
             return json.load(f)
     except FileNotFoundError:
         return {}
-    try:
-        with open(filename, "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        # If file doesn't exist, return empty dict or provide a default
-        return {}
 
 # Load holdings
 HOLDINGS = load_holdings()
+if not HOLDINGS:
+    print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
+else:
+    print(HOLDINGS)
 
 def load_settings(filename="settings.json"):
     """
@@ -56,21 +54,9 @@ def load_settings(filename="settings.json"):
     """
     try:
         with open(filename, "r") as f:
-            settings = json.load(f)
-            # Only grab specific entries if they exist
-            result = {}
-            for key in ["PERIOD", "INTERVAL", "UPDATE_INTERVAL", "LOCAL_CURRENCY"]:
-                if key in settings:
-                    result[key] = settings[key]
-            return result
+            return json.load(f)
     except FileNotFoundError:
         return {}
-
-if not HOLDINGS:
-    print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
-else:
-    print(HOLDINGS)
-
 
 ### SETTINGS ###
 PERIOD = load_settings().get("PERIOD")  # Timespan of data to fetch, default to "1d" if not set

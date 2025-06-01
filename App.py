@@ -320,6 +320,7 @@ class PortfolioOverview(Container):
             closing.loading = False
             change.loading = False
             actual.loading = False
+            
 class TickerPriceDisplay(Digits):
     """
     Widget for displaying the current price of a specific ticker symbol.

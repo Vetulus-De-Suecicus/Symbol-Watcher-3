@@ -37,18 +37,16 @@ Here are some tips to improve your code:
 
 4. **Use Logging**: Replace print statements with the logging module for better control over output and debugging.
 
-5. **DRY Principle**: Avoid repeating code, especially in methods like refresh_price and convert_to_local_currency. Factor out common logic.
-
 6. **Type Annotations**: Add type hints to functions and methods for better readability and tooling support.
 
-7. **Docstrings**: Expand docstrings to explain parameters, return values, and exceptions.
-
 8. **UI Responsiveness**: Consider handling slow network calls asynchronously or in background threads to avoid UI freezes.
-
-9. **Configuration**: Move settings (like PERIOD, INTERVAL, UPDATE_INTERVAL) to a config file or use environment variables.
 
 10. **Testing**: Add unit tests for your data handling and conversion logic.
 
 11. **Resource Management**: Cache or reuse yfinance.Ticker objects if possible, to avoid unnecessary network calls.
 
 12. **Code Formatting**: Use a linter (like flake8) and formatter (like black) for consistent style.
+
+""""""""""""""""""""
+
+

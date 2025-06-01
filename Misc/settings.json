@@ -1,0 +1,6 @@
+    {
+        "PERIOD": "1d",
+        "INTERVAL": "1m",
+        "UPDATE_INTERVAL": 60,
+        "LOCAL_CURRENCY": "SEK"
+    }

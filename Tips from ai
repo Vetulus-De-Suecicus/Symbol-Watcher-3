@@ -1,0 +1,54 @@
+Error Handling for Data Fetching
+When fetching data from Yahoo Finance (yf.Ticker and .history()), add error handling for network issues, missing data, or API changes. This will make your app more robust.
+
+Avoid Repeated Data Fetches
+In convert_to_local_currency, you fetch currency data every time the function is called. Consider caching currency rates for the session or a set interval to reduce API calls and speed up the UI.
+
+Separation of Concerns
+Your Symboldata class fetches data and stores it. Consider separating data fetching (e.g., a service or utility function) from the data model to make testing and maintenance easier.
+
+UI Responsiveness
+The refresh_price method updates all labels synchronously. If you have many holdings, this could block the UI. Consider updating asynchronously or in batches.
+
+Magic Strings and Numbers
+Use constants or enums for things like "holdings.json", "SEK", and "1d". This makes the code easier to configure and maintain.
+
+Class Naming
+Use CamelCase for class names (e.g., SymbolData instead of Symboldata) to follow Python conventions.
+
+Docstrings and Comments
+Your docstrings are good, but consider adding more comments for complex logic, especially in UI composition and data conversion.
+
+Resource Cleanup
+If you open files or network connections, ensure they are properly closed or use context managers.
+
+Unit Tests
+Add unit tests for your data loading, currency conversion, and UI logic to catch bugs early.
+
+
+""""""""""""""""""""""""
+Here are some tips to improve your code:
+
+1. **Separate Concerns**: Split your code into multiple files/modules (e.g., data loading, UI widgets, business logic) for better maintainability.
+
+2. **Error Handling**: Add more robust error handling, especially for network requests (e.g., yfinance calls) and data parsing.
+
+3. **Avoid Global Variables**: Pass dependencies (like HOLDINGS, LOCAL_CURRENCY) as parameters or encapsulate them in classes, instead of using globals.
+
+4. **Use Logging**: Replace print statements with the logging module for better control over output and debugging.
+
+5. **DRY Principle**: Avoid repeating code, especially in methods like refresh_price and convert_to_local_currency. Factor out common logic.
+
+6. **Type Annotations**: Add type hints to functions and methods for better readability and tooling support.
+
+7. **Docstrings**: Expand docstrings to explain parameters, return values, and exceptions.
+
+8. **UI Responsiveness**: Consider handling slow network calls asynchronously or in background threads to avoid UI freezes.
+
+9. **Configuration**: Move settings (like PERIOD, INTERVAL, UPDATE_INTERVAL) to a config file or use environment variables.
+
+10. **Testing**: Add unit tests for your data handling and conversion logic.
+
+11. **Resource Management**: Cache or reuse yfinance.Ticker objects if possible, to avoid unnecessary network calls.
+
+12. **Code Formatting**: Use a linter (like flake8) and formatter (like black) for consistent style.

@@ -50,7 +50,7 @@ def load_settings(filename="settings.json"):
         filename (str): The path to the JSON file containing application settings.
 
     Returns:
-        dict: A dictionary containing settings for PERIOD, INTERVAL, and UPDATE_INTERVAL.
+        dict: A dictionary containing settings for PERIOD, INTERVAL, LOCAL_CURRENCY, and UPDATE_INTERVAL.
     """
     try:
         with open(filename, "r") as f:

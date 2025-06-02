@@ -32,13 +32,6 @@ def load_holdings(filename="holdings.json"):
     except FileNotFoundError:
         return {}
 
-# Load holdings
-HOLDINGS = load_holdings()
-if not HOLDINGS:
-    print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
-else:
-    print(HOLDINGS)
-
 def load_settings(filename="settings.json"):
     """
     Load application settings from a JSON file.
@@ -58,12 +51,6 @@ def load_settings(filename="settings.json"):
             return json.load(f)
     except FileNotFoundError:
         return {}
-
-### SETTINGS ###
-PERIOD = load_settings().get("PERIOD")  # Timespan of data to fetch, default to "1d" if not set
-INTERVAL = load_settings().get("INTERVAL")  # Data granularity
-UPDATE_INTERVAL = load_settings().get("UPDATE_INTERVAL")  # How often to fetch prices (in seconds), min 60
-LOCAL_CURRENCY = load_settings().get("LOCAL_CURRENCY")  # Local currency for conversion
 
 def Clean_symbol(symbol):
     """
@@ -493,4 +480,18 @@ class SymbolWatcher(App):
         self.push_screen(HelpScreen())
 
 if __name__ == "__main__":
-    SymbolWatcher().run()  # Run the app
+    # Load holdings
+    HOLDINGS = load_holdings()
+    if not HOLDINGS:
+        print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
+    else:
+        print(HOLDINGS)
+        
+    # Load settings
+    PERIOD = load_settings().get("PERIOD")  # Timespan of data to fetch, default to "1d" if not set
+    INTERVAL = load_settings().get("INTERVAL")  # Data granularity
+    UPDATE_INTERVAL = load_settings().get("UPDATE_INTERVAL")  # How often to fetch prices (in seconds), min 60
+    LOCAL_CURRENCY = load_settings().get("LOCAL_CURRENCY")  # Local currency for conversion
+
+    # Run the app
+    SymbolWatcher().run() 

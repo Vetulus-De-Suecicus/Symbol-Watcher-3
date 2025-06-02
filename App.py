@@ -113,8 +113,7 @@ class StockManager:
         return self.stocks[key]
 
 class CurrencyConvert:
-    def __init__(self, stock_manager, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, stock_manager):
         self.currency_cache = {}  # {currencystring: (timestamp, last_close)}
         self.stock_manager = stock_manager
 
@@ -238,28 +237,6 @@ class PortfolioOverview(Container):
         super().__init__(*args, **kwargs)
         self.stock_manager = stock_manager  # Reference to StockManager
         self.currency_convert = currency_convert
-
-    ### Redundant function, will remove later - now uses CurrencyConvert class instead ###
-    def convert_to_local_currency(self, symbol):
-        """
-        Convert the last closing price of a symbol to the local currency.
-
-        Fetches the latest exchange rate using Yahoo Finance and converts the
-        stock's closing price to the local currency.
-
-        Args:
-            symbol (str): The symbol to convert.
-
-        Returns:
-            float: The converted price in local currency.
-        """
-        stocklastclosed = self.stock_manager[symbol].close.iloc[-1]  # Last close price
-        currencystring = LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X"  # Currency pair string
-        currencyticker = yf.Ticker(currencystring)  # Fetch currency data
-        self.history = currencyticker.history()  # Get currency history
-        currencylastclosed = self.history['Close'].iloc[-1]  # Last close price of currency
-        value = stocklastclosed / currencylastclosed  # Convert to local currency
-        return value
         
     def compose(self) -> ComposeResult:
         """
@@ -317,6 +294,7 @@ class PortfolioOverview(Container):
         Updates the UI elements for each symbol with the latest data, converting
         to local currency if necessary.
         """
+        create_symbols()
         for symbol in HOLDINGS.keys():
             closing = self.query_one(f"#{Clean_symbol(symbol)}", expect_type=Label)
             actual = self.query_one(f"#{Clean_symbol(symbol)}actual", expect_type=Label)

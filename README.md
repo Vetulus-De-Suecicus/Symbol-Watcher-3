@@ -34,8 +34,8 @@ Remember to always set LOCAL_CURRENCY to the currency you wish to have the app d
 TODO:<br/>
 Work on what AI told me to do :p<br/>
 <br/>
-Sreenshot
-![alt text](https://github.com/Vetulus-De-Suecicus/Symbol-Watcher-3/blob/main/Images/Screenshot.png)
+Sreenshot <br/>
+![Screenshot](https://github.com/Vetulus-De-Suecicus/Symbol-Watcher-3/blob/main/Images/Screenshot.png)
 <br/>
 <br/>
 special thanks to:<br/>

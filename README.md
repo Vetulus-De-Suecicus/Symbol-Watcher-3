@@ -2,7 +2,7 @@
 Portfolio and graph tool for stocks built on textual, textual-plot and yfinance
 
 TODO:<br/> 
-[] Remove Global variables and use load_settings function instead.
+Work on what AI told me to do :p
 
 Sreenshot
 ![alt text](https://github.com/Vetulus-De-Suecicus/Symbol-Watcher-3/blob/main/Images/Screenshot.png)

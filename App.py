@@ -1,4 +1,5 @@
 # Import necessary libraries
+import time
 import json
 import regex as re  # For regular expressions
 import yfinance as yf  # For fetching financial data
@@ -111,6 +112,38 @@ class StockManager:
         """
         return self.stocks[key]
 
+class CurrencyConvert:
+    def __init__(self, stock_manager, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.currency_cache = {}  # {currencystring: (timestamp, last_close)}
+        self.stock_manager = stock_manager
+
+    def convert_to_local_currency(self, symbol):
+        """
+        Convert the last closing price of a symbol to the local currency.
+        Fetches the latest exchange rate using Yahoo Finance and converts the
+        stock's closing price to the local currency.
+        Args:
+            symbol (str): The symbol to convert.
+        Returns:
+            float: The converted price in local currency.
+        """
+        stocklastclosed = self.stock_manager[symbol].close.iloc[-1]  # Last close price
+        currencystring = LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X"  # Currency pair string
+
+        now = time.time()
+        cache = self.currency_cache.get(currencystring)
+        if cache is None or now - cache[0] > 60:
+            currencyticker = yf.Ticker(currencystring)
+            history = currencyticker.history()
+            currencylastclosed = history['Close'].iloc[-1]
+            self.currency_cache[currencystring] = (now, currencylastclosed)
+        else:
+            currencylastclosed = cache[1]
+
+        value = stocklastclosed / currencylastclosed  # Convert to local currency
+        return value
+
 def create_symbols():
     """
     Create Symboldata objects for each holding in the user's portfolio.
@@ -201,10 +234,12 @@ class PortfolioOverview(Container):
     Args:
         stock_manager (StockManager): The manager containing all Symboldata objects.
     """
-    def __init__(self, stock_manager, *args, **kwargs):
+    def __init__(self, stock_manager, currency_convert, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stock_manager = stock_manager  # Reference to StockManager
+        self.currency_convert = currency_convert
 
+    ### Redundant function, will remove later - now uses CurrencyConvert class instead ###
     def convert_to_local_currency(self, symbol):
         """
         Convert the last closing price of a symbol to the local currency.
@@ -247,7 +282,7 @@ class PortfolioOverview(Container):
                         if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
                             yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}:{self.stock_manager[symbol].currency}", id=f"{Clean_symbol(symbol)}")
                         else:
-                            convertedlaststock = self.convert_to_local_currency(symbol)
+                            convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
                             yield Label(f"Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
                     with VerticalGroup(classes="symbolactual"):
                         # Calculate actual value (converted if needed)
@@ -255,7 +290,7 @@ class PortfolioOverview(Container):
                             actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
                             total += actualvalue
                         else:
-                            actualvalue = self.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
+                            actualvalue = self.currency_convert.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
                             total += actualvalue
                         yield Label(f"Actual: {actualvalue:.2f}", id=f"{Clean_symbol(symbol)}actual")
                     with VerticalGroup(classes="symbolchange"):
@@ -305,11 +340,11 @@ class PortfolioOverview(Container):
                 change.update(f"Changed: {changedvalue:.2f}")
             elif self.stock_manager[symbol].currency != LOCAL_CURRENCY:
                 # Closing updated prices for converted currency
-                convertedlaststock = self.convert_to_local_currency(symbol)
+                convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
                 closing.update(f"Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
 
                 # Actual updated prices for converted currency
-                actualvalue = self.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
+                actualvalue = self.currency_convert.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
                 actual.update(f"Actual: {actualvalue:.2f}")
 
                 # Changed prices updated for converted currency
@@ -430,7 +465,8 @@ class SymbolWatcher(App):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.stock_manager = StockManager()  # Create stock manager
+        self.stock_manager = StockManager() # Create stock manager
+        self.currency_convert = CurrencyConvert(self.stock_manager) # Create a Currency Converter 
         symbols = create_symbols()  # Create symbol data objects
         for symbol in symbols:
             self.stock_manager.add_stock(symbol)  # Add to manager
@@ -442,7 +478,7 @@ class SymbolWatcher(App):
         Includes the header, portfolio overview, symbol tickers container, and footer.
         """
         yield Header(show_clock=True)  # Header with clock
-        yield PortfolioOverview(self.stock_manager, classes="-hidden")  # Portfolio overview
+        yield PortfolioOverview(self.stock_manager, self.currency_convert, classes="-hidden")  # Portfolio overview
         with ScrollableContainer(id="Symbols"): # Container for symbol tickers
             pass  
         yield Footer()  # Footer

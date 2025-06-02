@@ -498,7 +498,7 @@ if __name__ == "__main__":
     if not HOLDINGS:
         print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
     else:
-        print(HOLDINGS)
+        print(f" Loaded holdings.json succesfully \n {HOLDINGS}")
 
     # Run the app
     SymbolWatcher().run() 

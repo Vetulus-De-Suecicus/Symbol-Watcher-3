@@ -17,7 +17,7 @@ OBSERVE!<br/>
 !. Configure the app as you wish via the settings.json file<br/>
 <br/>
 PERIOD - Controls for how long you want the plots to show data for. Lowest period is one day.<br/>
-INTERVAL - Controls the granularity. Valid input are 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo<br/>
+INTERVAL - Controls the granularity. Valid inputs are as followed: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo<br/>
 UPDATE_INTERVAL - Controls how often the prices are updated. Fastest update rate is once every 60 seconds.<br/>
 LOCAL_CURRENCY - Controls the currency conversion for the total portfolio worth calulcations.<br/>
 <br/>

@@ -30,7 +30,12 @@ Remember to always set LOCAL_CURRENCY to the currency you wish to have the app d
         "LOCAL_CURRENCY": "SEK"
     }
 ```
+<br/>
+!. To run outside your IDE you need to use textual via your  desired terminal as follows:
 
+```
+textual run App.py
+```
 <br/>
 TODO:<br/>
 Work on what AI told me to do :p<br/>

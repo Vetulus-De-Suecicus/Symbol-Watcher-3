@@ -10,6 +10,19 @@ from textual_plot import PlotWidget, HiResMode  # For plotting widgets
 from textual.widgets import Label, Header, Footer, Static, Button, Digits  # UI widgets
 from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup, Container  # Layout containers
 
+### FOR FUTURE REFACTORING ###
+class Settings:
+    """
+    Loads and stores application settings from a JSON file.
+    Provides attributes for PERIOD, INTERVAL, UPDATE_INTERVAL, and LOCAL_CURRENCY.
+    """
+
+    def __init__(self, filename="settings.json"):
+        settings = load_settings(filename)
+        self.PERIOD = settings.get("PERIOD")
+        self.INTERVAL = settings.get("INTERVAL")
+        self.UPDATE_INTERVAL = settings.get("UPDATE_INTERVAL")
+        self.LOCAL_CURRENCY = settings.get("LOCAL_CURRENCY")
 
 # For dictionary of holdings: "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY]
 def load_holdings(filename="holdings.json"):
@@ -115,7 +128,7 @@ class CurrencyConvert:
             float: The converted price in local currency.
         """
         stocklastclosed = self.stock_manager[symbol].close.iloc[-1]  # Last close price
-        currencystring = LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X"  # Currency pair string
+        currencystring = Settings().LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X"  # Currency pair string
 
         now = time.time()
         cache = self.currency_cache.get(currencystring)
@@ -159,9 +172,9 @@ class HelpScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         with Container(id="help-screen-container"):
-            yield Label("Remember to set LOCAL_CURRENCY and HOLDINGS correctly")
-            yield Label(f"All values are presented in {LOCAL_CURRENCY} for the Overview")
-            yield Label(f"All values are NOT presented in {LOCAL_CURRENCY} for the Plots/Graphs")
+            yield Label("Remember to set correctly configure settings(.json) and holdings(.json) in appropriate json files")
+            yield Label(f"All values are presented in {Settings().LOCAL_CURRENCY} for the Overview")
+            yield Label(f"All values are NOT presented in {Settings().LOCAL_CURRENCY} for the Plots/Graphs")
             yield Label("Press ESC to exit")
 
 class Symboldata():
@@ -190,7 +203,7 @@ class Symboldata():
         self.quantity = quantity
         self.value = value
         stock = yf.Ticker(self.symbol)  # Fetch ticker data
-        self.history = stock.history(period=PERIOD, interval=INTERVAL)  # Get historical data
+        self.history = stock.history(period=Settings().PERIOD, interval=Settings().INTERVAL)  # Get historical data using Settings class for PERIOD
         self.datetime = self.history.index  # Get datetime index
         self.datetime = list(range(len(self.datetime)))  # Convert to list of indices for plotting
         self.close = self.history["Close"]  # Closing prices
@@ -243,14 +256,14 @@ class PortfolioOverview(Container):
                     yield Label(f"{symbol}")  # Symbol label
                     with HorizontalGroup(classes="symbolclosed"):
                         # Show close price, convert if needed
-                        if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
+                        if self.stock_manager[symbol].currency == Settings().LOCAL_CURRENCY:
                             yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}:{self.stock_manager[symbol].currency}", id=f"{Clean_symbol(symbol)}")
                         else:
                             convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
-                            yield Label(f"Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
+                            yield Label(f"Close: {convertedlaststock:.2f}:{Settings().LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
                     with VerticalGroup(classes="symbolactual"):
                         # Calculate actual value (converted if needed)
-                        if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
+                        if self.stock_manager[symbol].currency == Settings().LOCAL_CURRENCY:
                             actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
                             total += actualvalue
                         else:
@@ -264,7 +277,7 @@ class PortfolioOverview(Container):
                         total_change += change
                         yield Label(f"Changed: {change:.2f}", id=f"{Clean_symbol(symbol)}change")
         # Show totals
-        yield Label(f"TOTAL WORTH: {total:.2f}:{LOCAL_CURRENCY} ::: TOTAL CHANGE: {total_change:.2f}:{LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}total", classes="allsymbols")
+        yield Label(f"TOTAL WORTH: {total:.2f}:{Settings().LOCAL_CURRENCY} ::: TOTAL CHANGE: {total_change:.2f}:{Settings().LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}total", classes="allsymbols")
     
     async def on_mount(self) -> None:
         """
@@ -272,7 +285,7 @@ class PortfolioOverview(Container):
 
         Starts a timer to refresh prices at the interval specified by UPDATE_INTERVAL.
         """
-        self.set_interval(UPDATE_INTERVAL, self.refresh_price)
+        self.set_interval(Settings().UPDATE_INTERVAL, self.refresh_price)
 
     async def refresh_price(self) -> None:
         """
@@ -289,7 +302,7 @@ class PortfolioOverview(Container):
             closing.loading = True
             change.loading = True
             actual.loading = True
-            if self.stock_manager[symbol].currency == LOCAL_CURRENCY:
+            if self.stock_manager[symbol].currency == Settings().LOCAL_CURRENCY:
                 # Closing updated prices
                 closingprice = self.stock_manager[symbol].close.iloc[-1]
                 currencyclosing = self.stock_manager[symbol].currency
@@ -303,10 +316,10 @@ class PortfolioOverview(Container):
                 purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
                 changedvalue = actualvalue - purchased_value
                 change.update(f"Changed: {changedvalue:.2f}")
-            elif self.stock_manager[symbol].currency != LOCAL_CURRENCY:
+            elif self.stock_manager[symbol].currency != Settings().LOCAL_CURRENCY:
                 # Closing updated prices for converted currency
                 convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
-                closing.update(f"Close: {convertedlaststock:.2f}:{LOCAL_CURRENCY}")
+                closing.update(f"Close: {convertedlaststock:.2f}:{Settings().LOCAL_CURRENCY}")
 
                 # Actual updated prices for converted currency
                 actualvalue = self.currency_convert.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
@@ -344,7 +357,7 @@ class TickerPriceDisplay(Digits):
 
         Starts a timer to refresh the displayed price at the interval specified by UPDATE_INTERVAL.
         """
-        self.set_interval(UPDATE_INTERVAL, self.refresh_price)
+        self.set_interval(Settings().UPDATE_INTERVAL, self.refresh_price)
 
     async def refresh_price(self) -> None:
         """
@@ -486,12 +499,6 @@ if __name__ == "__main__":
         print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
     else:
         print(HOLDINGS)
-        
-    # Load settings
-    PERIOD = load_settings().get("PERIOD")  # Timespan of data to fetch, default to "1d" if not set
-    INTERVAL = load_settings().get("INTERVAL")  # Data granularity
-    UPDATE_INTERVAL = load_settings().get("UPDATE_INTERVAL")  # How often to fetch prices (in seconds), min 60
-    LOCAL_CURRENCY = load_settings().get("LOCAL_CURRENCY")  # Local currency for conversion
 
     # Run the app
     SymbolWatcher().run() 

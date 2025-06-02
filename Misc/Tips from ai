@@ -1,9 +1,6 @@
 Error Handling for Data Fetching
 When fetching data from Yahoo Finance (yf.Ticker and .history()), add error handling for network issues, missing data, or API changes. This will make your app more robust.
 
-Avoid Repeated Data Fetches
-In convert_to_local_currency, you fetch currency data every time the function is called. Consider caching currency rates for the session or a set interval to reduce API calls and speed up the UI.
-
 Separation of Concerns
 Your Symboldata class fetches data and stores it. Consider separating data fetching (e.g., a service or utility function) from the data model to make testing and maintenance easier.
 

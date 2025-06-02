@@ -35,7 +35,7 @@ TODO:<br/>
 Work on what AI told me to do :p<br/>
 <br/>
 Sreenshot <br/>
-![Screenshot](https://github.com/Vetulus-De-Suecicus/Symbol-Watcher-3/blob/main/Images/Screenshot.png)
+![Screenshot](https://github.com/Vetulus-De-Suecicus/Symbol-Watcher-3/blob/main/Images/Screenshot.png?raw=true)
 <br/>
 <br/>
 special thanks to:<br/>

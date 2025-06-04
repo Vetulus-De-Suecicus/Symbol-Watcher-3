@@ -308,7 +308,7 @@ class PortfolioOverview(Container):
                                         f"{self.stock_manager[symbol].close.iloc[-1]:.2f}"
                                         f":{self.stock_manager[symbol].currency}",
                                         id=f"{Clean_symbol(symbol)}"
-                                        )s
+                                        )
                         else:
                             convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
                             yield Label(f"Close: {convertedlaststock:.2f}"

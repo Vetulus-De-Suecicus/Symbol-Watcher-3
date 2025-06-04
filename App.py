@@ -4,17 +4,23 @@ import json
 import regex as re  # For regular expressions
 import yfinance as yf  # For fetching financial data
 from textual import on  # For event handling in textual
-from textual.screen import ModalScreen 
+from textual.screen import ModalScreen
 from textual.app import App, ComposeResult  # Main app and composition
 from textual_plot import PlotWidget, HiResMode  # For plotting widgets
-from textual.widgets import Label, Header, Footer, Static, Button, Digits  # UI widgets
-from textual.containers import ScrollableContainer, HorizontalGroup, VerticalGroup, Container  # Layout containers
+from textual.widgets import (
+    Label, Header, Footer, Static, Button, Digits
+)  # UI widgets
+from textual.containers import (
+    ScrollableContainer, HorizontalGroup,
+    VerticalGroup, Container  # Layout containers
+)
 
-### FOR FUTURE REFACTORING ###
+
 class Settings:
     """
-    Loads and stores application settings from a JSON file.
-    Provides attributes for PERIOD, INTERVAL, UPDATE_INTERVAL, and LOCAL_CURRENCY.
+    Loads and stores application settings from
+    a JSON file. Provides attributes for PERIOD,
+    INTERVAL, UPDATE_INTERVAL, and LOCAL_CURRENCY.
     """
 
     def __init__(self, filename="settings.json"):
@@ -24,14 +30,18 @@ class Settings:
         self.UPDATE_INTERVAL = settings.get("UPDATE_INTERVAL")
         self.LOCAL_CURRENCY = settings.get("LOCAL_CURRENCY")
 
+
 # For dictionary of holdings: "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY]
 def load_holdings(filename="holdings.json"):
     """
     Load holdings data from a JSON file.
 
-    Attempts to open and parse the specified JSON file containing the user's stock holdings.
-    Each holding should be structured as "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY].
-    If the file does not exist, returns an empty dictionary.
+    Attempts to open and parse the specified JSON
+    file containing the user's stock holdings.
+    Each holding should be structured as
+    "TICKER": [QUANTITY, VALUE IN LOCAL CURRENCY].
+    If the file does not exist, returns an empty
+    dictionary.
 
     Args:
         filename (str): The path to the JSON file containing holdings data.
@@ -45,19 +55,29 @@ def load_holdings(filename="holdings.json"):
     except FileNotFoundError:
         return {}
 
+
 def load_settings(filename="settings.json"):
     """
-    Load application settings from a JSON file.
+    Load application settings
+    from a JSON file.
 
-    Reads the specified JSON file to load user-configurable settings such as PERIOD, INTERVAL, and UPDATE_INTERVAL.
-    These settings control the timespan of data to fetch, the data granularity, and how often prices are updated.
-    If the file does not exist, returns an empty dictionary.
+    Reads the specified JSON file to load
+    user-configurable settings such as
+    PERIOD, INTERVAL, and UPDATE_INTERVAL.
+    These settings control the timespan of data
+    to fetch, the data granularity, and
+    how often prices are updated.
+    If the file does not exist,
+    returns an empty dictionary.
+
 
     Args:
-        filename (str): The path to the JSON file containing application settings.
+        filename (str): The path to the JSON
+        file containing application settings.
 
     Returns:
-        dict: A dictionary containing settings for PERIOD, INTERVAL, LOCAL_CURRENCY, and UPDATE_INTERVAL.
+        dict: A dictionary containing settings for
+        PERIOD, INTERVAL, LOCAL_CURRENCY, and UPDATE_INTERVAL.
     """
     try:
         with open(filename, "r") as f:
@@ -65,12 +85,14 @@ def load_settings(filename="settings.json"):
     except FileNotFoundError:
         return {}
 
+
 def Clean_symbol(symbol):
     """
     Sanitize a symbol string by removing all non-alphanumeric characters.
 
-    This function ensures that the symbol string is safe for use as an identifier
-    in UI elements or queries by stripping out any characters that are not letters or numbers.
+    This function ensures that the symbol string is safe for use as an
+    identifier in UI elements or queries by stripping out any
+    characters that are not letters or numbers.
 
     Args:
         symbol (str): The symbol string to clean.
@@ -80,12 +102,14 @@ def Clean_symbol(symbol):
     """
     return re.sub(r'[^a-zA-Z0-9]', '', str(symbol))
 
+
 class StockManager:
     """
     Manages a collection of SymbolData objects representing stock holdings.
 
-    Provides methods to add new stock data and access them in a dictionary-like manner.
-    Used as a central repository for all stock-related data within the application.
+    Provides methods to add new stock data and access them in a
+    dictionary-like manner. Used as a central repository for all
+    stock-related data within the application.
     """
 
     def __init__(self):
@@ -112,6 +136,7 @@ class StockManager:
         """
         return self.stocks[key]
 
+
 class CurrencyConvert:
     def __init__(self, stock_manager):
         self.currency_cache = {}  # {currencystring: (timestamp, last_close)}
@@ -127,8 +152,9 @@ class CurrencyConvert:
         Returns:
             float: The converted price in local currency.
         """
-        stocklastclosed = self.stock_manager[symbol].close.iloc[-1]  # Last close price
-        currencystring = Settings().LOCAL_CURRENCY + self.stock_manager[symbol].currency + "=X"  # Currency pair string
+        stocklastclosed = self.stock_manager[symbol].close.iloc[-1]
+        currencystring = (Settings().LOCAL_CURRENCY  # Currency Pair string
+                          + self.stock_manager[symbol].currency + "=X")
 
         now = time.time()
         cache = self.currency_cache.get(currencystring)
@@ -140,15 +166,17 @@ class CurrencyConvert:
         else:
             currencylastclosed = cache[1]
 
-        value = stocklastclosed / currencylastclosed  # Convert to local currency
+        value = stocklastclosed / currencylastclosed  # Convert local currency
         return value
+
 
 def create_symbols():
     """
     Create SymbolData objects for each holding in the user's portfolio.
 
-    Iterates through the loaded holdings and instantiates a SymbolData object for each,
-    using the symbol, quantity, and purchase value. Returns a list of these objects.
+    Iterates through the loaded holdings and instantiates a
+    SymbolData object for each, using the symbol, quantity, and purchase value.
+    Returns a list of these objects.
 
     Returns:
         list: A list of SymbolData instances for each holding.
@@ -157,9 +185,10 @@ def create_symbols():
     for symbol in HOLDINGS.keys():
         quantity = HOLDINGS[symbol][0]  # Get quantity
         value = HOLDINGS[symbol][1]  # Get value
-        stock = SymbolData(symbol, quantity, value)  # Create SymbolData instance
+        stock = SymbolData(symbol, quantity, value)  # SymbolData instance
         stocks.append(stock)  # Add to list
     return stocks
+
 
 class HelpScreen(ModalScreen):
     """
@@ -172,18 +201,27 @@ class HelpScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         with Container(id="help-screen-container"):
-            yield Label("Remember to set correctly configure settings(.json) and holdings(.json) in appropriate json files")
-            yield Label(f"All values are presented in {Settings().LOCAL_CURRENCY} for the Overview")
-            yield Label(f"All values are NOT presented in {Settings().LOCAL_CURRENCY} for the Plots/Graphs")
+            yield Label("Remember to set correctly configure settings(.json) "
+                        "and holdings(.json) in appropriate json files")
+            yield Label(
+                f"All values are presented in {Settings().LOCAL_CURRENCY} "
+                f"for the Overview"
+            )
+            yield Label(
+                f"All values are NOT presented in {Settings().LOCAL_CURRENCY}"
+                "for the Plots/Graphs"
+                 )
             yield Label("Press ESC to exit")
+
 
 class SymbolData():
     """
     Represents and fetches financial data for a single stock symbol.
 
-    On initialization, retrieves historical price and volume data from Yahoo Finance,
-    stores relevant information such as open, close, high, low, and volume, and
-    determines the currency of the stock. Used as the data model for each holding.
+    On initialization, retrieves historical price and
+    volume data from Yahoo Finance, stores relevant information such as
+    open, close, high, low, and volume, and determines the
+    currency of the stock. Used as the data model for each holding.
 
     Attributes:
         symbol (str): The stock symbol.
@@ -198,21 +236,24 @@ class SymbolData():
         volume (Series): Volume data.
         currency (str): Currency of the stock.
     """
-    def __init__(self,symbol, quantity, value):
+    def __init__(self, symbol, quantity, value):
         self.symbol = symbol
         self.quantity = quantity
         self.value = value
         stock = yf.Ticker(self.symbol)  # Fetch ticker data
-        self.history = stock.history(period=Settings().PERIOD, interval=Settings().INTERVAL)  # Get historical data using Settings class for PERIOD
+        self.history = stock.history(   # Get historical data
+            period=Settings().PERIOD,
+            interval=Settings().INTERVAL
+            )
         self.datetime = self.history.index  # Get datetime index
-        self.datetime = list(range(len(self.datetime)))  # Convert to list of indices for plotting
+        self.datetime = list(range(len(self.datetime)))  # Convert to list
         self.close = self.history["Close"]  # Closing prices
         self.open = self.history["Open"]  # Opening prices
         self.high = self.history["High"]  # High prices
         self.low = self.history["Low"]  # Low prices
         self.volume = self.history["Volume"]  # Volume data
         self.currency = stock.info["currency"]  # Currency of the stock
-        
+
     def __repr__(self):
         """
         Return a string representation of the SymbolData object for debugging.
@@ -220,24 +261,30 @@ class SymbolData():
         Returns:
             str: Debug string with symbol, quantity, and price.
         """
-        return f'Stock({self.symbol!r}), Quant({self.quantity!r}), Price({self.value!r})'
+        return (f'Stock({self.symbol!r}), '
+                f'Quant({self.quantity!r}), '
+                f'Price({self.value!r})'
+                )
+
 
 class PortfolioOverview(Container):
     """
     Widget that displays an overview of the user's entire portfolio.
 
-    Shows each holding's symbol, current price (converted to local currency if needed),
-    actual value, and change from purchase value. Also displays total portfolio worth
-    and total change. Periodically refreshes prices and updates the display.
+    Shows each holding's symbol, current price
+    (converted to local currency if needed), actual value, and change from
+    purchase value. Also displays total portfolio worth and total change.
+    Periodically refreshes prices and updates the display.
 
     Args:
-        stock_manager (StockManager): The manager containing all SymbolData objects.
+        stock_manager (StockManager): The manager containing
+        all SymbolData objects.
     """
     def __init__(self, stock_manager, currency_convert, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stock_manager = stock_manager  # Reference to StockManager
         self.currency_convert = currency_convert
-        
+
     def compose(self) -> ComposeResult:
         """
         Compose the widgets for the portfolio overview display.
@@ -257,7 +304,11 @@ class PortfolioOverview(Container):
                     with HorizontalGroup(classes="symbolclosed"):
                         # Show close price, convert if needed
                         if self.stock_manager[symbol].currency == Settings().LOCAL_CURRENCY:
-                            yield Label(f"Close: {self.stock_manager[symbol].close.iloc[-1]:.2f}:{self.stock_manager[symbol].currency}", id=f"{Clean_symbol(symbol)}")
+                            yield Label(f"Close: "
+                                        f"{self.stock_manager[symbol].close.iloc[-1]:.2f}"
+                                        f":{self.stock_manager[symbol].currency}",
+                                        id=f"{Clean_symbol(symbol)}"
+                                        )s
                         else:
                             convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
                             yield Label(f"Close: {convertedlaststock:.2f}:{Settings().LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
@@ -277,8 +328,10 @@ class PortfolioOverview(Container):
                         total_change += change
                         yield Label(f"Changed: {change:.2f}", id=f"{Clean_symbol(symbol)}change")
         # Show totals
-        yield Label(f"TOTAL WORTH: {total:.2f}:{Settings().LOCAL_CURRENCY} ::: TOTAL CHANGE: {total_change:.2f}:{Settings().LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}total", classes="allsymbols")
-    
+        yield Label(f"TOTAL WORTH: {total:.2f}:{Settings().LOCAL_CURRENCY} ::: "
+                    f"TOTAL CHANGE: {total_change:.2f}:{Settings().LOCAL_CURRENCY}",
+                    id=f"{Clean_symbol(symbol)}total", classes="allsymbols")
+
     async def on_mount(self) -> None:
         """
         Set up periodic price refresh when the widget is mounted.
@@ -307,13 +360,15 @@ class PortfolioOverview(Container):
                 closingprice = self.stock_manager[symbol].close.iloc[-1]
                 currencyclosing = self.stock_manager[symbol].currency
                 closing.update(f"Close: {closingprice:.2f}:{currencyclosing}")
-                
+
                 # Actual updated prices
-                actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
+                actualvalue = (self.stock_manager[symbol].close.iloc[-1]
+                               * self.stock_manager[symbol].quantity)
                 actual.update(f"Actual: {actualvalue:.2f}")
 
                 # Changed prices updated
-                purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
+                purchased_value = (self.stock_manager[symbol].quantity
+                                   * self.stock_manager[symbol].value)
                 changedvalue = actualvalue - purchased_value
                 change.update(f"Changed: {changedvalue:.2f}")
             elif self.stock_manager[symbol].currency != Settings().LOCAL_CURRENCY:
@@ -322,18 +377,21 @@ class PortfolioOverview(Container):
                 closing.update(f"Close: {convertedlaststock:.2f}:{Settings().LOCAL_CURRENCY}")
 
                 # Actual updated prices for converted currency
-                actualvalue = self.currency_convert.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
+                actualvalue = (self.currency_convert.convert_to_local_currency(symbol)
+                               * self.stock_manager[symbol].quantity)
                 actual.update(f"Actual: {actualvalue:.2f}")
 
                 # Changed prices updated for converted currency
-                purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
+                purchased_value = (self.stock_manager[symbol].quantity
+                                   * self.stock_manager[symbol].value)
                 changedvalue = actualvalue - purchased_value
                 change.update(f"Changed: {changedvalue:.2f}")
 
             closing.loading = False
             change.loading = False
             actual.loading = False
-            
+
+
 class TickerPriceDisplay(Digits):
     """
     Widget for displaying the current price of a specific ticker symbol.
@@ -355,7 +413,8 @@ class TickerPriceDisplay(Digits):
         """
         Set up periodic price refresh when the widget is mounted.
 
-        Starts a timer to refresh the displayed price at the interval specified by UPDATE_INTERVAL.
+        Starts a timer to refresh the displayed price at the
+        interval specified by UPDATE_INTERVAL.
         """
         self.set_interval(Settings().UPDATE_INTERVAL, self.refresh_price)
 
@@ -368,12 +427,14 @@ class TickerPriceDisplay(Digits):
         price = self.stock_manager[self.symbol].close.iloc[-1]
         self.update(f"{price:.2f}")
 
+
 class SymbolTicker(Static):
     """
-    Widget representing a single stock symbol, including price display and plot.
+    Widget representing a single stock symbol,
+    including price display and plot.
 
-    Contains a remove button, a real-time price display, and a plot of recent price history.
-    Can be dynamically added or removed from the UI.
+    Contains a remove button, a real-time price display, and a plot of
+    recent price history. Can be dynamically added or removed from the UI.
 
     Args:
         symbol (str): The symbol to display.
@@ -392,36 +453,46 @@ class SymbolTicker(Static):
         Includes a remove button, price display, and a plot widget.
         """
         with HorizontalGroup():
-            yield Button(f"Remove Symbol {self.symbol}", id="remove")  # Remove button
-            yield TickerPriceDisplay(self.symbol, self.stock_manager, id=f"{Clean_symbol(self.symbol)}")  # Price display
+            yield Button(f"Remove Symbol {self.symbol}",
+                         id="remove")  # Remove button
+            yield TickerPriceDisplay(self.symbol,  # Price display
+                                     self.stock_manager,
+                                     id=f"{Clean_symbol(self.symbol)}")
         yield PlotWidget(id="plot")  # Plot widget
 
     def on_mount(self) -> None:
         """
-        Plot the symbol's historical data and update the price display on mount.
+        Plot the symbol's historical data and update
+        the price display on mount.
 
-        Initializes the plot with the symbol's closing prices and updates the price display.
+        Initializes the plot with the symbol's
+        closing prices and updates the price display.
         """
         plot = self.query_one(PlotWidget)
         symbol_data = self.stock_manager[self.symbol]
-        plot.plot(x=symbol_data.datetime, y=symbol_data.close, hires_mode=HiResMode.BRAILLE)
+        plot.plot(x=symbol_data.datetime,
+                  y=symbol_data.close,
+                  hires_mode=HiResMode.BRAILLE)
         sticker = self.query_one(f"#{Clean_symbol(self.symbol)}")
         sticker.update(f"{self.stock_manager[self.symbol].close.iloc[-1]:.2f}")
 
     @on(Button.Pressed, "#remove")
     def remove_symbol(self) -> None:
         """
-        Remove this symbol widget from the UI when the remove button is pressed.
+        Remove this symbol widget from the UI
+        when the remove button is pressed.
         """
         self.remove()
+
 
 class SymbolWatcher(App):
     """
     Main application class for the Symbol Watcher.
 
     Manages the overall UI, event handling, and coordination between widgets.
-    Handles loading holdings, creating stock data objects, and responding to user actions
-    such as adding symbols, toggling the overview, and displaying help.
+    Handles loading holdings, creating stock data objects, and responding-
+    to user actions such as adding symbols, toggling the overview,
+    and displaying help.
 
     Attributes:
         TITLE (str): The application title.
@@ -433,7 +504,7 @@ class SymbolWatcher(App):
 
     TITLE = "Symbol Watcher 3"
     SUB_TITLE = "0.1"
-    
+
     CSS_PATH = "style.tcss"  # Path to CSS file
     BINDINGS = [
         ("a", "add_symbols", "Add Plots"),
@@ -443,8 +514,9 @@ class SymbolWatcher(App):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.stock_manager = StockManager() # Create stock manager
-        self.currency_convert = CurrencyConvert(self.stock_manager) # Create a Currency Converter 
+        self.stock_manager = StockManager()  # Create stock manager
+        # create currency converter
+        self.currency_convert = CurrencyConvert(self.stock_manager)
         symbols = create_symbols()  # Create symbol data objects
         for symbol in symbols:
             self.stock_manager.add_stock(symbol)  # Add to manager
@@ -453,14 +525,17 @@ class SymbolWatcher(App):
         """
         Compose the main application widgets.
 
-        Includes the header, portfolio overview, symbol tickers container, and footer.
+        Includes the header, portfolio overview,
+        symbol tickers container, and footer.
         """
         yield Header(show_clock=True)  # Header with clock
-        yield PortfolioOverview(self.stock_manager, self.currency_convert, classes="-hidden")  # Portfolio overview
-        with ScrollableContainer(id="Symbols"): # Container for symbol tickers
-            pass  
+        yield PortfolioOverview(self.stock_manager,
+                                self.currency_convert,
+                                classes="-hidden")  # Portfolio overview
+        with ScrollableContainer(id="Symbols"):  # Container for symbol tickers
+            pass
         yield Footer()  # Footer
-    
+
     def on_mount(self):
         """
         Set the application theme when the app is mounted.
@@ -481,7 +556,8 @@ class SymbolWatcher(App):
         """
         print("Creating Symbols with plots n stuff")
         for symbol in self.stock_manager.stocks:
-            symbolticker = SymbolTicker(self.stock_manager[symbol].symbol, self.stock_manager)
+            symbolticker = SymbolTicker(self.stock_manager[symbol].symbol,
+                                        self.stock_manager)
             container = self.query_one("#Symbols")
             container.mount(symbolticker)
             symbolticker.scroll_visible()
@@ -492,13 +568,15 @@ class SymbolWatcher(App):
         """
         self.push_screen(HelpScreen())
 
+
 if __name__ == "__main__":
     # Load holdings
     HOLDINGS = load_holdings()
     if not HOLDINGS:
-        print("No holdings found. Please ensure 'holdings.json' exists and contains valid JSON data.")
+        print("No holdings found. Please ensure 'holdings.json' "
+              "exists and contains valid JSON data.")
     else:
         print(f" Loaded holdings.json succesfully \n {HOLDINGS}")
 
     # Run the app
-    SymbolWatcher().run() 
+    SymbolWatcher().run()

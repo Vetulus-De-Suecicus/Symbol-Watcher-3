@@ -82,7 +82,7 @@ def Clean_symbol(symbol):
 
 class StockManager:
     """
-    Manages a collection of Symboldata objects representing stock holdings.
+    Manages a collection of SymbolData objects representing stock holdings.
 
     Provides methods to add new stock data and access them in a dictionary-like manner.
     Used as a central repository for all stock-related data within the application.
@@ -93,22 +93,22 @@ class StockManager:
 
     def add_stock(self, stock):
         """
-        Add a Symboldata object to the manager.
+        Add a SymbolData object to the manager.
 
         Args:
-            stock (Symboldata): The stock data object to add.
+            stock (SymbolData): The stock data object to add.
         """
         self.stocks[stock.symbol] = stock
 
     def __getitem__(self, key):
         """
-        Retrieve a Symboldata object by its symbol.
+        Retrieve a SymbolData object by its symbol.
 
         Args:
             key (str): The symbol of the stock to retrieve.
 
         Returns:
-            Symboldata: The corresponding stock data object.
+            SymbolData: The corresponding stock data object.
         """
         return self.stocks[key]
 
@@ -145,19 +145,19 @@ class CurrencyConvert:
 
 def create_symbols():
     """
-    Create Symboldata objects for each holding in the user's portfolio.
+    Create SymbolData objects for each holding in the user's portfolio.
 
-    Iterates through the loaded holdings and instantiates a Symboldata object for each,
+    Iterates through the loaded holdings and instantiates a SymbolData object for each,
     using the symbol, quantity, and purchase value. Returns a list of these objects.
 
     Returns:
-        list: A list of Symboldata instances for each holding.
+        list: A list of SymbolData instances for each holding.
     """
     stocks = []
     for symbol in HOLDINGS.keys():
         quantity = HOLDINGS[symbol][0]  # Get quantity
         value = HOLDINGS[symbol][1]  # Get value
-        stock = Symboldata(symbol, quantity, value)  # Create Symboldata instance
+        stock = SymbolData(symbol, quantity, value)  # Create SymbolData instance
         stocks.append(stock)  # Add to list
     return stocks
 
@@ -177,7 +177,7 @@ class HelpScreen(ModalScreen):
             yield Label(f"All values are NOT presented in {Settings().LOCAL_CURRENCY} for the Plots/Graphs")
             yield Label("Press ESC to exit")
 
-class Symboldata():
+class SymbolData():
     """
     Represents and fetches financial data for a single stock symbol.
 
@@ -215,7 +215,7 @@ class Symboldata():
         
     def __repr__(self):
         """
-        Return a string representation of the Symboldata object for debugging.
+        Return a string representation of the SymbolData object for debugging.
 
         Returns:
             str: Debug string with symbol, quantity, and price.
@@ -231,7 +231,7 @@ class PortfolioOverview(Container):
     and total change. Periodically refreshes prices and updates the display.
 
     Args:
-        stock_manager (StockManager): The manager containing all Symboldata objects.
+        stock_manager (StockManager): The manager containing all SymbolData objects.
     """
     def __init__(self, stock_manager, currency_convert, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -436,7 +436,7 @@ class SymbolWatcher(App):
     
     CSS_PATH = "style.tcss"  # Path to CSS file
     BINDINGS = [
-        ("a", "add_symbols", "Add symbols"),
+        ("a", "add_symbols", "Add Plots"),
         ("s", "toggle_overview", "Toggle Overview"),
         ("h", "toggle_help", "Help")
     ]

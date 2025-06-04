@@ -311,22 +311,28 @@ class PortfolioOverview(Container):
                                         )s
                         else:
                             convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
-                            yield Label(f"Close: {convertedlaststock:.2f}:{Settings().LOCAL_CURRENCY}", id=f"{Clean_symbol(symbol)}")
+                            yield Label(f"Close: {convertedlaststock:.2f}"
+                                        f":{Settings().LOCAL_CURRENCY}",
+                                        id=f"{Clean_symbol(symbol)}")
                     with VerticalGroup(classes="symbolactual"):
                         # Calculate actual value (converted if needed)
                         if self.stock_manager[symbol].currency == Settings().LOCAL_CURRENCY:
-                            actualvalue = self.stock_manager[symbol].close.iloc[-1] * self.stock_manager[symbol].quantity
+                            actualvalue = (self.stock_manager[symbol].close.iloc[-1]
+                                           * self.stock_manager[symbol].quantity)
                             total += actualvalue
                         else:
-                            actualvalue = self.currency_convert.convert_to_local_currency(symbol) * self.stock_manager[symbol].quantity
+                            actualvalue = (self.currency_convert.convert_to_local_currency(symbol)
+                                           * self.stock_manager[symbol].quantity)
                             total += actualvalue
                         yield Label(f"Actual: {actualvalue:.2f}", id=f"{Clean_symbol(symbol)}actual")
                     with VerticalGroup(classes="symbolchange"):
                         # Calculate change from purchase value
-                        purchased_value = self.stock_manager[symbol].quantity * self.stock_manager[symbol].value
+                        purchased_value = (self.stock_manager[symbol].quantity
+                                           * self.stock_manager[symbol].value)
                         change = actualvalue - purchased_value
                         total_change += change
-                        yield Label(f"Changed: {change:.2f}", id=f"{Clean_symbol(symbol)}change")
+                        yield Label(f"Changed: {change:.2f}",
+                                    id=f"{Clean_symbol(symbol)}change")
         # Show totals
         yield Label(f"TOTAL WORTH: {total:.2f}:{Settings().LOCAL_CURRENCY} ::: "
                     f"TOTAL CHANGE: {total_change:.2f}:{Settings().LOCAL_CURRENCY}",
@@ -336,22 +342,28 @@ class PortfolioOverview(Container):
         """
         Set up periodic price refresh when the widget is mounted.
 
-        Starts a timer to refresh prices at the interval specified by UPDATE_INTERVAL.
+        Starts a timer to refresh prices at the
+        interval specified by UPDATE_INTERVAL.
         """
         self.set_interval(Settings().UPDATE_INTERVAL, self.refresh_price)
 
     async def refresh_price(self) -> None:
         """
-        Refresh the displayed prices, actual values, and changes for all holdings.
+        Refresh the displayed prices, actual values,
+        and changes for all holdings.
 
-        Updates the UI elements for each symbol with the latest data, converting
+        Updates the UI elements for each symbol
+        with the latest data, converting
         to local currency if necessary.
         """
         create_symbols()
         for symbol in HOLDINGS.keys():
-            closing = self.query_one(f"#{Clean_symbol(symbol)}", expect_type=Label)
-            actual = self.query_one(f"#{Clean_symbol(symbol)}actual", expect_type=Label)
-            change = self.query_one(f"#{Clean_symbol(symbol)}change", expect_type=Label)
+            closing = self.query_one(f"#{Clean_symbol(symbol)}",
+                                     expect_type=Label)
+            actual = self.query_one(f"#{Clean_symbol(symbol)}actual",
+                                    expect_type=Label)
+            change = self.query_one(f"#{Clean_symbol(symbol)}change",
+                                    expect_type=Label)
             closing.loading = True
             change.loading = True
             actual.loading = True

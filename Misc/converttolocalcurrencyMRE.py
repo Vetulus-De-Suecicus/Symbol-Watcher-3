@@ -34,4 +34,3 @@ class CurrencyConvert:
         value = stocklastclosed / currencylastclosed  # Convert to local currency
         return value
     
-    

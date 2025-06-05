@@ -303,14 +303,16 @@ class PortfolioOverview(Container):
                     yield Label(f"{symbol}")  # Symbol label
                     with HorizontalGroup(classes="symbolclosed"):
                         # Show close price, convert if needed
-                        if self.stock_manager[symbol].currency == Settings().LOCAL_CURRENCY:
+                        if (self.stock_manager[symbol].currency 
+                            == Settings().LOCAL_CURRENCY):
                             yield Label(f"Close: "
                                         f"{self.stock_manager[symbol].close.iloc[-1]:.2f}"
                                         f":{self.stock_manager[symbol].currency}",
                                         id=f"{Clean_symbol(symbol)}"
                                         )
                         else:
-                            convertedlaststock = self.currency_convert.convert_to_local_currency(symbol)
+                            convertedlaststock = (
+                                self.currency_convert.convert_to_local_currency(symbol))
                             yield Label(f"Close: {convertedlaststock:.2f}"
                                         f":{Settings().LOCAL_CURRENCY}",
                                         id=f"{Clean_symbol(symbol)}")

@@ -15,3 +15,21 @@ volume = history["Volume"]  # Volume data
 currency = stock.info["currency"]  # Currency of the stock
 
 print(currency)
+print(close.iloc[0])
+
+
+
+stocklastclosed = close.iloc[-1] / 100
+print(stocklastclosed)
+
+currencymod = currency.upper()
+currencystring = "SEK" + currencymod + "=X"
+
+
+currencyticker = yf.Ticker(currencystring)
+currencyhistory = currencyticker.history()
+currencylastclosed = currencyhistory['Close'].iloc[-1]
+print(currencylastclosed)
+
+value = stocklastclosed / currencylastclosed  # Convert local currency
+print(value)

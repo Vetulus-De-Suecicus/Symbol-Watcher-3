@@ -155,14 +155,23 @@ class CurrencyConvert:
         stocklastclosed = self.stock_manager[symbol].close.iloc[-1]
         currencystring = (Settings().LOCAL_CURRENCY  # Currency Pair string
                           + self.stock_manager[symbol].currency + "=X")
-
+        value = 0
         now = time.time()
         cache = self.currency_cache.get(currencystring)
         if cache is None or now - cache[0] > 60:
-            currencyticker = yf.Ticker(currencystring)
-            history = currencyticker.history()
-            currencylastclosed = history['Close'].iloc[-1]
-            self.currency_cache[currencystring] = (now, currencylastclosed)
+            if self.stock_manager[symbol].currency == "GBp":
+                # Handle special case for GBp (British pence)
+                stocklastclosed /= 100
+                currencyticker = yf.Ticker(currencystring)
+                history = currencyticker.history()
+                currencylastclosed = history['Close'].iloc[-1]
+                self.currency_cache[currencystring] = (now, currencylastclosed)
+                
+            else:
+                currencyticker = yf.Ticker(currencystring)
+                history = currencyticker.history()
+                currencylastclosed = history['Close'].iloc[-1]
+                self.currency_cache[currencystring] = (now, currencylastclosed)
         else:
             currencylastclosed = cache[1]
 
@@ -325,6 +334,8 @@ class PortfolioOverview(Container):
                         else:
                             actualvalue = (self.currency_convert.convert_to_local_currency(symbol)
                                            * self.stock_manager[symbol].quantity)
+                            if self.stock_manager[symbol].currency == "GBp":
+                                actualvalue /= 100
                             total += actualvalue
                         yield Label(f"Actual: {actualvalue:.2f}", id=f"{Clean_symbol(symbol)}actual")
                     with VerticalGroup(classes="symbolchange"):
@@ -391,8 +402,13 @@ class PortfolioOverview(Container):
                 closing.update(f"Close: {convertedlaststock:.2f}:{Settings().LOCAL_CURRENCY}")
 
                 # Actual updated prices for converted currency
-                actualvalue = (self.currency_convert.convert_to_local_currency(symbol)
-                               * self.stock_manager[symbol].quantity)
+                if self.stock_manager[symbol].currency == "GBp":
+                    actualvalue = (self.currency_convert.convert_to_local_currency(symbol)
+                                * self.stock_manager[symbol].quantity)
+                    actualvalue /= 100
+                else:
+                    actualvalue = (self.currency_convert.convert_to_local_currency(symbol)
+                                * self.stock_manager[symbol].quantity)
                 actual.update(f"Actual: {actualvalue:.2f}")
 
                 # Changed prices updated for converted currency
